@@ -1,0 +1,89 @@
+@if (SelectedMode == ModeLabel.Pfeile)
+{
+    <div class="compass-grid">
+        @foreach (var directionCommand in AppConstants.DirectionCommands.Take(3))
+        {
+            <CommandButton CommandText="@directionCommand.Command" Disabled="ControlsAreDisabled" Icon="@directionCommand.Arrow" Label="@directionCommand.Label" OnSendCommand="OnSendCommand" />
+        }
+        <CommandButton CommandText="AW" Disabled="ControlsAreDisabled" Icon="←" Label="W" OnSendCommand="OnSendCommand" />
+        <div class="compass-center">+</div>
+        <CommandButton CommandText="AE" Disabled="ControlsAreDisabled" Icon="→" Label="O" OnSendCommand="OnSendCommand" />
+        @foreach (var directionCommand in AppConstants.DirectionCommands.Skip(5))
+        {
+            <CommandButton CommandText="@directionCommand.Command" Disabled="ControlsAreDisabled" Icon="@directionCommand.Arrow" Label="@directionCommand.Label" OnSendCommand="OnSendCommand" />
+        }
+    </div>
+}
+else if (SelectedMode == ModeLabel.Karten)
+{
+    <div class="card-control-panel">
+        <div class="suit-grid">
+            @foreach (var suitOption in AppConstants.SuitOptions)
+            {
+                <button class="suit-button @(SelectedSuitCode == suitOption.Code ? "is-selected" : "")"
+                        disabled="@ControlsAreDisabled"
+                        @onclick="@(() => OnSelectCardSuit.InvokeAsync(suitOption.Code))">
+                    <span class="suit-mark @(suitOption.IsRed ? "is-red" : "")">@suitOption.Mark</span>
+                    <span>@suitOption.Label</span>
+                </button>
+            }
+        </div>
+        <div class="rank-grid">
+            @foreach (var rankOption in AppConstants.RankOptions)
+            {
+                <button class="camera-command-button" disabled="@ControlsAreDisabled" @onclick="@(() => OnSendCardRank.InvokeAsync(rankOption.Code))">
+                    @rankOption.Label
+                </button>
+            }
+        </div>
+        <div class="joker-row">
+            <CommandButton CommandText="CJ1" Disabled="ControlsAreDisabled" Label="Joker 1" OnSendCommand="OnSendCommand" />
+            <CommandButton CommandText="CJ2" Disabled="ControlsAreDisabled" Label="Joker 2" OnSendCommand="OnSendCommand" />
+        </div>
+    </div>
+}
+else if (SelectedMode == ModeLabel.Text)
+{
+    <div class="symbol-panel">
+        <label>@GermanText.Text</label>
+        <div class="symbol-input-row">
+            <input maxlength="2" value="@SymbolText" @oninput="ChangeSymbolText" disabled="@ControlsAreDisabled" />
+            <button class="button primary-button" disabled="@ControlsAreDisabled" @onclick="OnSendSymbol">@GermanText.Send</button>
+        </div>
+    </div>
+}
+else if (SelectedMode == ModeLabel.Esp)
+{
+    <div class="symbol-grid">
+        @foreach (var symbolCommand in AppConstants.EspSymbolCommands)
+        {
+            <CommandButton CommandText="@symbolCommand.Command" Disabled="ControlsAreDisabled" Icon="@symbolCommand.Symbol" Label="@symbolCommand.Label" OnSendCommand="OnSendCommand" />
+        }
+    </div>
+}
+else if (SelectedMode == ModeLabel.Wuerfel)
+{
+    <div class="symbol-grid">
+        @foreach (var cubeCommand in AppConstants.CubeCommands)
+        {
+            <CommandButton CommandText="@cubeCommand.Command" Disabled="ControlsAreDisabled" Icon="@cubeCommand.Symbol" Label="@cubeCommand.Label" OnSendCommand="OnSendCommand" />
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public bool ControlsAreDisabled { get; set; }
+    [Parameter, EditorRequired] public ModeLabel SelectedMode { get; set; }
+    [Parameter, EditorRequired] public string SelectedSuitCode { get; set; } = "H";
+    [Parameter, EditorRequired] public string SymbolText { get; set; } = "";
+    [Parameter, EditorRequired] public EventCallback<string> OnSelectCardSuit { get; set; }
+    [Parameter, EditorRequired] public EventCallback<string> OnSendCardRank { get; set; }
+    [Parameter, EditorRequired] public EventCallback<string> OnSendCommand { get; set; }
+    [Parameter, EditorRequired] public EventCallback OnSendSymbol { get; set; }
+    [Parameter, EditorRequired] public EventCallback<string> OnSetSymbolText { get; set; }
+
+    private async Task ChangeSymbolText(ChangeEventArgs changeEventArgs)
+    {
+        await OnSetSymbolText.InvokeAsync(Convert.ToString(changeEventArgs.Value) ?? "");
+    }
+}

@@ -1,0 +1,409 @@
+@page "/"
+@implements IDisposable
+@inject ApplicationStateStore StateStore
+@inject SettingsStorage SettingsStorage
+@inject BluetoothPrompterClient BluetoothPrompterClient
+@inject CommandService CommandService
+
+<PageTitle>@GermanText.ApplicationTitle</PageTitle>
+
+@if (State.FullScreenMode is not null)
+{
+    <VideoFullScreen
+        State="State"
+        OnBack="CloseFullScreenMode"
+        OnClearDisplay="CommandService.ClearDisplayAsync"
+        OnHideControls="@(() => UpdateState(currentState => currentState with { AreFullScreenControlsVisible = false }))"
+        OnShowControls="@(() => UpdateState(currentState => currentState with { AreFullScreenControlsVisible = true }))"
+        OnSelectCardSuit="SelectCardSuit"
+        OnSendCardRank="CommandService.SendCardRankAsync"
+        OnSendCommand="CommandService.SendCommandAndMaybeCloseOverlayAsync"
+        OnSendSymbol="CommandService.SendSymbolAsync"
+        OnSetFakeVideoPaused="SetFakeVideoPaused"
+        OnSetSymbolText="SetSymbolText"
+        OnSetZoom="SetCameraZoom" />
+}
+else
+{
+    <div class="@PageClass">
+        <div class="drawer-backdrop @(State.IsMenuOpen ? "is-visible" : "")">
+            <aside class="drawer-panel">
+                <header class="drawer-header">
+                    <img src="icon-192.png" alt="" class="title-icon" />
+                    <div>
+                        <div class="drawer-title">@GermanText.Menu</div>
+                        <div class="metadata-line">@MetadataLine</div>
+                    </div>
+                </header>
+                <nav class="drawer-items" aria-label="@GermanText.Menu">
+                    @foreach (var menuItem in AppConstants.MenuItems)
+                    {
+                        <button class="drawer-item @(State.SelectedMenuItem == menuItem ? "is-active" : "")"
+                                @onclick="@(() => SelectMenuItem(menuItem))">
+                            <span class="drawer-indicator"></span>
+                            <span>@GermanText.GetMenuLabel(menuItem)</span>
+                        </button>
+                    }
+                </nav>
+            </aside>
+            <button class="drawer-dismiss" aria-label="@GermanText.CloseMenu" @onclick="CloseMenu"></button>
+        </div>
+
+        <main class="app-shell">
+            <header class="app-header">
+                <div class="header-top-row">
+                    <button class="icon-button menu-toggle" aria-label="@GermanText.OpenMenu" @onclick="OpenMenu">☰</button>
+                    <div class="title-block">
+                        <div class="title-row">
+                            <img src="icon-192.png" alt="" class="title-icon" />
+                            <h1>@GermanText.ApplicationTitle</h1>
+                        </div>
+                        <p class="metadata-line">@MetadataLine</p>
+                    </div>
+                </div>
+                <div class="header-status-row">
+                    <span class="connection-state @(State.IsConnected || State.IsTestModeEnabled ? "is-connected" : "")">
+                        <span class="state-dot"></span>
+                        @GermanText.GetConnectionStatusText(State.ConnectionStatus)
+                    </span>
+                </div>
+            </header>
+
+            <h2 class="screen-heading">@GermanText.GetMenuLabel(State.SelectedMenuItem)</h2>
+
+            @if (State.SelectedMenuItem == MenuItem.Client)
+            {
+                <ClientPanel
+                    State="State"
+                    OnCancelBluetoothOperation="CancelBluetoothOperation"
+                    OnClearDisplay="CommandService.ClearDisplayAsync"
+                    OnConnect="Connect"
+                    OnDisconnect="Disconnect"
+                    OnOpenFullScreenMode="OpenFullScreenMode"
+                    OnReconnect="ReconnectRememberedDevice"
+                    OnSearchSleepingDevice="SearchSleepingDevice"
+                    OnSetTestMode="SetTestMode" />
+            }
+            else if (State.SelectedMenuItem == MenuItem.Einstellungen)
+            {
+                <SettingsPanel
+                    State="State"
+                    OnSendCycleSleepCommand="CommandService.SendCycleSleepCommandAsync"
+                    OnSetCameraButtonAppearance="SetCameraButtonAppearance"
+                    OnSetCameraButtonOpacity="SetCameraButtonOpacity"
+                    OnSetCameraViewStyle="SetCameraViewStyle"
+                    OnSetCycleListenSeconds="SetCycleListenSeconds"
+                    OnSetCycleSleepSeconds="SetCycleSleepSeconds"
+                    OnSetDarkMode="SetDarkMode"
+                    OnSetDisplayInverted="SetDisplayInverted"
+                    OnSetDisplayRotated="SetDisplayRotated"
+                    OnSetShouldCloseButtonViewAfterSend="SetShouldCloseButtonViewAfterSend"
+                    OnSetShouldSkipSleepDisplayAfterClearDisplay="SetShouldSkipSleepDisplayAfterClearDisplay" />
+            }
+            else if (State.SelectedMenuItem == MenuItem.Log)
+            {
+                <LogPanel MessageLog="State.MessageLog" />
+            }
+            else
+            {
+                <AboutPanel />
+            }
+        </main>
+    </div>
+}
+
+@code {
+    private bool haveSettingsLoaded;
+    private Timer? recordingTimer;
+    private ApplicationState State => StateStore.State;
+    private string PageClass => State.IsDarkModeEnabled ? "app-root dark-theme" : "app-root";
+    private string MetadataLine => $"PWA · Build {ApplicationStateStore.FormatEuropeanDate(DateTimeOffset.Now)} · GitHub Pages bereit";
+
+    protected override async Task OnInitializedAsync()
+    {
+        StateStore.StateChanged += HandleStateChanged;
+        var persistedSettings = await SettingsStorage.LoadSettingsAsync();
+
+        if (persistedSettings is not null)
+        {
+            StateStore.ApplyPersistedSettings(persistedSettings);
+        }
+
+        haveSettingsLoaded = true;
+    }
+
+    private void HandleStateChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SaveSettingsAsync()
+    {
+        if (!haveSettingsLoaded)
+        {
+            return;
+        }
+
+        await SettingsStorage.SaveSettingsAsync(StateStore.GetPersistedSettings());
+    }
+
+    private void UpdateState(Func<ApplicationState, ApplicationState> updateState)
+    {
+        StateStore.Update(updateState);
+    }
+
+    private async Task UpdateStateAndSaveAsync(Func<ApplicationState, ApplicationState> updateState)
+    {
+        StateStore.Update(updateState);
+        await SaveSettingsAsync();
+    }
+
+    private void OpenMenu() => UpdateState(currentState => currentState with { IsMenuOpen = true });
+
+    private void CloseMenu() => UpdateState(currentState => currentState with { IsMenuOpen = false });
+
+    private void SelectMenuItem(MenuItem menuItem)
+    {
+        UpdateState(currentState => currentState with
+        {
+            SelectedMenuItem = menuItem,
+            IsMenuOpen = false
+        });
+    }
+
+    private async Task Connect()
+    {
+        var wasConnected = await BluetoothPrompterClient.RequestAndConnectAsync(BluetoothScanMode.Filtered);
+
+        if (wasConnected)
+        {
+            await SynchronizeDisplaySettingsAsync();
+            await SaveSettingsAsync();
+        }
+    }
+
+    private async Task ReconnectRememberedDevice()
+    {
+        if (State.RememberedBluetoothDevice is null)
+        {
+            await Connect();
+            return;
+        }
+
+        var wasConnected = await BluetoothPrompterClient.ReconnectRememberedDeviceAsync(State.RememberedBluetoothDevice);
+
+        if (wasConnected)
+        {
+            await SynchronizeDisplaySettingsAsync();
+            await SaveSettingsAsync();
+        }
+    }
+
+    private async Task SearchSleepingDevice()
+    {
+        if (State.IsTestModeEnabled)
+        {
+            const string message = "Testmodus: Suche nach schlafendem Gerät simuliert.";
+            UpdateState(currentState => currentState with
+            {
+                SleepingDeviceSearchText = message,
+                LastResponse = message
+            });
+            StateStore.AddLogEntry(message);
+            return;
+        }
+
+        var wasConnected = await BluetoothPrompterClient.RequestAndConnectAsync(BluetoothScanMode.SleepingDevice);
+
+        if (wasConnected)
+        {
+            await SynchronizeDisplaySettingsAsync();
+            await SaveSettingsAsync();
+        }
+    }
+
+    private async Task Disconnect()
+    {
+        await BluetoothPrompterClient.DisconnectAsync();
+    }
+
+    private void CancelBluetoothOperation()
+    {
+        UpdateState(currentState => currentState with
+        {
+            ConnectionStatus = ConnectionStatus.NotConnected,
+            IsBluetoothOperationRunning = false,
+            DiscoveredDevices = Array.Empty<BluetoothDeviceInformation>(),
+            SleepingDeviceSearchText = "",
+            LastResponse = currentState.ConnectionStatus == ConnectionStatus.Connecting
+                ? GermanText.CancelConnection
+                : GermanText.CancelSearch
+        });
+    }
+
+    private async Task SetTestMode(bool nextValue)
+    {
+        if (nextValue)
+        {
+            await BluetoothPrompterClient.DisconnectAsync();
+            UpdateState(currentState => currentState with
+            {
+                IsTestModeEnabled = true,
+                IsConnected = false,
+                ConnectedDeviceName = "",
+                ConnectionStatus = ConnectionStatus.TestMode,
+                LastResponse = GermanText.TestModeEnabled
+            });
+            StateStore.AddLogEntry("Testmodus aktiviert.");
+            return;
+        }
+
+        UpdateState(currentState => currentState with
+        {
+            IsTestModeEnabled = false,
+            ConnectionStatus = ConnectionStatus.NotConnected,
+            LastResponse = GermanText.TestModeDisabled
+        });
+        StateStore.AddLogEntry(GermanText.TestModeDisabled);
+    }
+
+    private async Task SetDarkMode(bool nextValue) =>
+        await UpdateStateAndSaveAsync(currentState => currentState with { IsDarkModeEnabled = nextValue });
+
+    private async Task SetShouldCloseButtonViewAfterSend(bool nextValue) =>
+        await UpdateStateAndSaveAsync(currentState => currentState with { ShouldCloseButtonViewAfterSend = nextValue });
+
+    private async Task SetShouldSkipSleepDisplayAfterClearDisplay(bool nextValue) =>
+        await UpdateStateAndSaveAsync(currentState => currentState with { ShouldSkipSleepDisplayAfterClearDisplay = nextValue });
+
+    private async Task SetCameraViewStyle(CameraViewStyle cameraViewStyle) =>
+        await UpdateStateAndSaveAsync(currentState => currentState with { SelectedCameraViewStyle = cameraViewStyle });
+
+    private async Task SetCameraButtonAppearance(CameraButtonAppearance cameraButtonAppearance) =>
+        await UpdateStateAndSaveAsync(currentState => currentState with { SelectedCameraButtonAppearance = cameraButtonAppearance });
+
+    private async Task SetCameraButtonOpacity(double opacity) =>
+        await UpdateStateAndSaveAsync(currentState => currentState with { CustomCameraButtonOpacity = ApplicationStateStore.ClampCameraButtonOpacity(opacity) });
+
+    private async Task SetCycleSleepSeconds(int deltaSeconds) =>
+        await UpdateStateAndSaveAsync(currentState => currentState with
+        {
+            CycleSleepSeconds = ApplicationStateStore.ClampInteger(
+                currentState.CycleSleepSeconds + deltaSeconds,
+                AppConstants.MinimumCycleSleepSeconds,
+                AppConstants.MaximumCycleSleepSeconds)
+        });
+
+    private async Task SetCycleListenSeconds(int deltaSeconds) =>
+        await UpdateStateAndSaveAsync(currentState => currentState with
+        {
+            CycleListenSeconds = ApplicationStateStore.ClampInteger(
+                currentState.CycleListenSeconds + deltaSeconds,
+                AppConstants.MinimumCycleListenSeconds,
+                AppConstants.MaximumCycleListenSeconds)
+        });
+
+    private async Task SetDisplayInverted(bool nextValue)
+    {
+        await UpdateStateAndSaveAsync(currentState => currentState with { IsDisplayInverted = nextValue });
+
+        if (State.IsConnected)
+        {
+            await CommandService.SendCommandAsync(nextValue ? "I1" : "I0");
+        }
+    }
+
+    private async Task SetDisplayRotated(bool nextValue)
+    {
+        await UpdateStateAndSaveAsync(currentState => currentState with { IsDisplayRotated = nextValue });
+
+        if (State.IsConnected)
+        {
+            await CommandService.SendCommandAsync(nextValue ? "U1" : "U0");
+        }
+    }
+
+    private async Task SynchronizeDisplaySettingsAsync()
+    {
+        await CommandService.SendCommandAsync(State.IsDisplayInverted ? "I1" : "I0");
+        await CommandService.SendCommandAsync(State.IsDisplayRotated ? "U1" : "U0");
+    }
+
+    private void OpenFullScreenMode(ModeLabel modeLabel)
+    {
+        UpdateState(currentState => currentState with
+        {
+            SelectedMode = modeLabel,
+            FullScreenMode = modeLabel,
+            AreFullScreenControlsVisible = false,
+            WasCardSuitButtonPressed = false,
+            RecordingStartedAt = DateTimeOffset.Now,
+            RecordingElapsedSeconds = 0,
+            IsFakeVideoPaused = false
+        });
+        StartRecordingTimer();
+    }
+
+    private void CloseFullScreenMode()
+    {
+        StopRecordingTimer();
+        UpdateState(currentState => currentState with
+        {
+            FullScreenMode = null,
+            AreFullScreenControlsVisible = false,
+            RecordingStartedAt = null,
+            RecordingElapsedSeconds = 0
+        });
+    }
+
+    private void SelectCardSuit(string suitCode)
+    {
+        UpdateState(currentState => currentState with
+        {
+            SelectedSuitCode = suitCode,
+            WasCardSuitButtonPressed = true
+        });
+    }
+
+    private void SetSymbolText(string symbolText)
+    {
+        UpdateState(currentState => currentState with { SymbolText = symbolText[..Math.Min(2, symbolText.Length)].ToUpperInvariant() });
+    }
+
+    private void SetFakeVideoPaused(bool nextValue)
+    {
+        UpdateState(currentState => currentState with { IsFakeVideoPaused = nextValue });
+    }
+
+    private void SetCameraZoom(double nextValue)
+    {
+        UpdateState(currentState => currentState with { CameraZoom = ApplicationStateStore.ClampCameraZoom(nextValue) });
+    }
+
+    private void StartRecordingTimer()
+    {
+        StopRecordingTimer();
+        recordingTimer = new Timer(_ =>
+        {
+            if (State.RecordingStartedAt is null)
+            {
+                return;
+            }
+
+            var elapsedSeconds = (int)Math.Floor((DateTimeOffset.Now - State.RecordingStartedAt.Value).TotalSeconds);
+            StateStore.Update(currentState => currentState with { RecordingElapsedSeconds = elapsedSeconds });
+        }, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+    }
+
+    private void StopRecordingTimer()
+    {
+        recordingTimer?.Dispose();
+        recordingTimer = null;
+    }
+
+    public void Dispose()
+    {
+        StopRecordingTimer();
+        StateStore.StateChanged -= HandleStateChanged;
+    }
+}

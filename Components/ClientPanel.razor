@@ -1,0 +1,118 @@
+<section class="panel">
+    <div class="toolbar">
+        @if (!State.IsConnected && !State.IsTestModeEnabled)
+        {
+            <button class="button primary-button" disabled="@State.IsBluetoothOperationRunning" @onclick="OnConnect">
+                @GermanText.Connect
+            </button>
+            @if (State.RememberedBluetoothDevice is not null)
+            {
+                <button class="button" disabled="@State.IsBluetoothOperationRunning" @onclick="OnReconnect">
+                    @GermanText.ConnectAgain
+                </button>
+            }
+            <button class="button" disabled="@State.IsBluetoothOperationRunning" @onclick="OnSearchSleepingDevice">
+                @GermanText.SearchSleepingDevice
+            </button>
+        }
+
+        @if (State.IsBluetoothOperationRunning)
+        {
+            <button class="button primary-button" @onclick="OnCancelBluetoothOperation">
+                @(State.ConnectionStatus == ConnectionStatus.Connecting ? GermanText.CancelConnection : GermanText.CancelSearch)
+            </button>
+        }
+
+        <div class="toolbar-action-row">
+            <button class="button" disabled="@ControlsAreDisabled" @onclick="OnClearDisplay">
+                <span aria-hidden="true">⌫</span> @GermanText.ClearDisplay
+            </button>
+            @if (State.IsConnected && !State.IsTestModeEnabled)
+            {
+                <button class="button" @onclick="OnDisconnect">@GermanText.Disconnect</button>
+            }
+        </div>
+
+        @if (!State.IsConnected)
+        {
+            <label class="toggle-control">
+                <span>@GermanText.TestMode</span>
+                <input type="checkbox" checked="@State.IsTestModeEnabled" @onchange="ChangeTestMode" />
+            </label>
+        }
+    </div>
+
+    @if (State.IsBluetoothOperationRunning || State.DiscoveredDevices.Count > 0)
+    {
+        <div class="device-panel">
+            <h3>@(State.IsBluetoothOperationRunning ? GermanText.FoundDevices : GermanText.ScanEnded)</h3>
+            @if (State.DiscoveredDevices.Count == 0)
+            {
+                <p>@GermanText.SearchIsRunning</p>
+            }
+            else
+            {
+                @foreach (var bluetoothDevice in State.DiscoveredDevices)
+                {
+                    <div class="device-row">@ApplicationStateStore.GetDeviceDisplayName(bluetoothDevice)</div>
+                }
+            }
+            <p class="muted-text">@ApplicationStateStore.GetScanModeText(State.ScanMode)</p>
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(State.SleepingDeviceSearchText))
+    {
+        <div class="device-panel">
+            <h3>@GermanText.CyclicSleep</h3>
+            <p>@State.SleepingDeviceSearchText</p>
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(State.ConnectedDeviceName))
+    {
+        <p class="connected-device-text">@GermanText.ConnectedWith @State.ConnectedDeviceName</p>
+    }
+
+    <div class="mode-tabs">
+        @foreach (var modeLabel in AppConstants.ModeLabels)
+        {
+            <button class="mode-tab @(State.SelectedMode == modeLabel ? "is-active" : "")"
+                    disabled="@ControlsAreDisabled"
+                    @onclick="@(() => OnOpenFullScreenMode.InvokeAsync(modeLabel))">
+                @GermanText.GetModeLabel(modeLabel)
+            </button>
+        }
+    </div>
+
+    <div class="status-panel">
+        <div class="status-line">
+            <span>@GermanText.LastCommand</span>
+            <strong>@State.LastCommand</strong>
+        </div>
+        <div class="status-line">
+            <span>@GermanText.Response</span>
+            <strong>@State.LastResponse</strong>
+        </div>
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public ApplicationState State { get; set; } = new();
+    [Parameter, EditorRequired] public EventCallback OnCancelBluetoothOperation { get; set; }
+    [Parameter, EditorRequired] public EventCallback OnClearDisplay { get; set; }
+    [Parameter, EditorRequired] public EventCallback OnConnect { get; set; }
+    [Parameter, EditorRequired] public EventCallback OnDisconnect { get; set; }
+    [Parameter, EditorRequired] public EventCallback<ModeLabel> OnOpenFullScreenMode { get; set; }
+    [Parameter, EditorRequired] public EventCallback OnReconnect { get; set; }
+    [Parameter, EditorRequired] public EventCallback OnSearchSleepingDevice { get; set; }
+    [Parameter, EditorRequired] public EventCallback<bool> OnSetTestMode { get; set; }
+
+    private bool ControlsAreDisabled => !State.IsConnected && !State.IsTestModeEnabled;
+
+    private async Task ChangeTestMode(ChangeEventArgs changeEventArgs)
+    {
+        var nextValue = changeEventArgs.Value is bool value && value;
+        await OnSetTestMode.InvokeAsync(nextValue);
+    }
+}

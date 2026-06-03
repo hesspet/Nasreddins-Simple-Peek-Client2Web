@@ -1,0 +1,46 @@
+@inject HttpClient HttpClient
+
+<section class="panel about-panel">
+    <img src="icon-192.png" alt="" class="about-icon" />
+    @if (aboutLines.Count == 0)
+    {
+        <p>@GermanText.ApplicationTitle</p>
+    }
+    else
+    {
+        @foreach (var line in aboutLines)
+        {
+            if (line.StartsWith("# ", StringComparison.Ordinal))
+            {
+                <h3>@line[2..]</h3>
+            }
+            else if (line.StartsWith("- ", StringComparison.Ordinal))
+            {
+                <p class="about-list-item">@line[2..]</p>
+            }
+            else if (!string.IsNullOrWhiteSpace(line))
+            {
+                <p>@line</p>
+            }
+        }
+    }
+    <p class="muted-text">@GermanText.SetupHint</p>
+    <p class="muted-text">@GermanText.ReconnectHint</p>
+</section>
+
+@code {
+    private List<string> aboutLines = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var aboutText = await HttpClient.GetStringAsync("about.md");
+            aboutLines = aboutText.Split('\n').Select(line => line.TrimEnd('\r')).ToList();
+        }
+        catch
+        {
+            aboutLines = [];
+        }
+    }
+}

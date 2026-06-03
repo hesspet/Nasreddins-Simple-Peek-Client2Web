@@ -1,0 +1,19 @@
+<section class="panel">
+    @if (MessageLog.Count == 0)
+    {
+        <p class="muted-text">@GermanText.NoLogEntries</p>
+    }
+    else
+    {
+        <ol class="log-list">
+            @foreach (var message in MessageLog)
+            {
+                <li>@message</li>
+            }
+        </ol>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<string> MessageLog { get; set; } = Array.Empty<string>();
+}

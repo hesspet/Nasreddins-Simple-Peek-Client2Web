@@ -1,0 +1,11 @@
+bin/
+obj/
+.vs/
+.vscode/
+*.user
+*.suo
+*.log
+dotnet-run.log
+dotnet-run.err.log
+TestResults/
+publish/

@@ -1,0 +1,119 @@
+<section class="panel settings-panel">
+    <label class="toggle-control">
+        <span>@GermanText.DarkMode</span>
+        <input type="checkbox" checked="@State.IsDarkModeEnabled" @onchange="ChangeDarkMode" />
+    </label>
+    <label class="toggle-control">
+        <span>@GermanText.CloseButtonViewAfterSend</span>
+        <input type="checkbox" checked="@State.ShouldCloseButtonViewAfterSend" @onchange="ChangeShouldCloseButtonViewAfterSend" />
+    </label>
+
+    <div class="settings-group">
+        <h3>@GermanText.Display</h3>
+        <label class="toggle-control">
+            <span>@GermanText.DisplayInverted</span>
+            <input type="checkbox" checked="@State.IsDisplayInverted" @onchange="ChangeDisplayInverted" />
+        </label>
+        <label class="toggle-control">
+            <span>@GermanText.DisplayRotated</span>
+            <input type="checkbox" checked="@State.IsDisplayRotated" @onchange="ChangeDisplayRotated" />
+        </label>
+        <label class="toggle-control">
+            <span>@GermanText.SkipSleepDisplayAfterClearDisplay</span>
+            <input type="checkbox" checked="@State.ShouldSkipSleepDisplayAfterClearDisplay" @onchange="ChangeShouldSkipSleepDisplayAfterClearDisplay" />
+        </label>
+    </div>
+
+    <div class="settings-group">
+        <h3>@GermanText.CyclicSleep</h3>
+        <div class="cycle-setting-row">
+            <span>@GermanText.SleepDuration</span>
+            <div class="stepper-row">
+                <button class="button" @onclick="@(() => OnSetCycleSleepSeconds.InvokeAsync(-5))">-5</button>
+                <strong>@State.CycleSleepSeconds s</strong>
+                <button class="button" @onclick="@(() => OnSetCycleSleepSeconds.InvokeAsync(5))">+5</button>
+            </div>
+        </div>
+        <div class="cycle-setting-row">
+            <span>@GermanText.ListenDuration</span>
+            <div class="stepper-row">
+                <button class="button" @onclick="@(() => OnSetCycleListenSeconds.InvokeAsync(-5))">-5</button>
+                <strong>@State.CycleListenSeconds s</strong>
+                <button class="button" @onclick="@(() => OnSetCycleListenSeconds.InvokeAsync(5))">+5</button>
+            </div>
+        </div>
+        <button class="button primary-button" @onclick="OnSendCycleSleepCommand">@GermanText.SendSleepCommand</button>
+    </div>
+
+    <div class="settings-group">
+        <h3>@GermanText.CameraView</h3>
+        <div class="segmented-options">
+            @foreach (var cameraViewStyle in Enum.GetValues<CameraViewStyle>())
+            {
+                <button class="mode-tab @(State.SelectedCameraViewStyle == cameraViewStyle ? "is-active" : "")"
+                        @onclick="@(() => OnSetCameraViewStyle.InvokeAsync(cameraViewStyle))">
+                    @GermanText.GetCameraViewStyleLabel(cameraViewStyle)
+                </button>
+            }
+        </div>
+    </div>
+
+    <div class="settings-group">
+        <h3>@GermanText.CameraControls</h3>
+        <div class="segmented-options">
+            @foreach (var cameraButtonAppearance in Enum.GetValues<CameraButtonAppearance>())
+            {
+                <button class="mode-tab @(State.SelectedCameraButtonAppearance == cameraButtonAppearance ? "is-active" : "")"
+                        @onclick="@(() => OnSetCameraButtonAppearance.InvokeAsync(cameraButtonAppearance))">
+                    @GermanText.GetCameraButtonAppearanceLabel(cameraButtonAppearance)
+                </button>
+            }
+        </div>
+        @if (State.SelectedCameraButtonAppearance == CameraButtonAppearance.Custom)
+        {
+            <label class="range-control">
+                <span>@GermanText.Opacity: @CameraButtonOpacityText</span>
+                <input type="range"
+                       min="@AppConstants.MinimumCameraButtonOpacity"
+                       max="@AppConstants.MaximumCameraButtonOpacity"
+                       step="0.01"
+                       value="@State.CustomCameraButtonOpacity"
+                       @onchange="ChangeCameraButtonOpacity" />
+            </label>
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public ApplicationState State { get; set; } = new();
+    [Parameter, EditorRequired] public EventCallback OnSendCycleSleepCommand { get; set; }
+    [Parameter, EditorRequired] public EventCallback<CameraButtonAppearance> OnSetCameraButtonAppearance { get; set; }
+    [Parameter, EditorRequired] public EventCallback<double> OnSetCameraButtonOpacity { get; set; }
+    [Parameter, EditorRequired] public EventCallback<CameraViewStyle> OnSetCameraViewStyle { get; set; }
+    [Parameter, EditorRequired] public EventCallback<int> OnSetCycleListenSeconds { get; set; }
+    [Parameter, EditorRequired] public EventCallback<int> OnSetCycleSleepSeconds { get; set; }
+    [Parameter, EditorRequired] public EventCallback<bool> OnSetDarkMode { get; set; }
+    [Parameter, EditorRequired] public EventCallback<bool> OnSetDisplayInverted { get; set; }
+    [Parameter, EditorRequired] public EventCallback<bool> OnSetDisplayRotated { get; set; }
+    [Parameter, EditorRequired] public EventCallback<bool> OnSetShouldCloseButtonViewAfterSend { get; set; }
+    [Parameter, EditorRequired] public EventCallback<bool> OnSetShouldSkipSleepDisplayAfterClearDisplay { get; set; }
+
+    private string CameraButtonOpacityText =>
+        $"{Math.Round(ApplicationStateStore.GetCameraButtonOpacity(State.SelectedCameraButtonAppearance, State.CustomCameraButtonOpacity) * 100)} %";
+
+    private async Task ChangeDarkMode(ChangeEventArgs changeEventArgs) => await OnSetDarkMode.InvokeAsync(GetBoolean(changeEventArgs));
+    private async Task ChangeDisplayInverted(ChangeEventArgs changeEventArgs) => await OnSetDisplayInverted.InvokeAsync(GetBoolean(changeEventArgs));
+    private async Task ChangeDisplayRotated(ChangeEventArgs changeEventArgs) => await OnSetDisplayRotated.InvokeAsync(GetBoolean(changeEventArgs));
+    private async Task ChangeShouldCloseButtonViewAfterSend(ChangeEventArgs changeEventArgs) => await OnSetShouldCloseButtonViewAfterSend.InvokeAsync(GetBoolean(changeEventArgs));
+    private async Task ChangeShouldSkipSleepDisplayAfterClearDisplay(ChangeEventArgs changeEventArgs) => await OnSetShouldSkipSleepDisplayAfterClearDisplay.InvokeAsync(GetBoolean(changeEventArgs));
+
+    private async Task ChangeCameraButtonOpacity(ChangeEventArgs changeEventArgs)
+    {
+        if (double.TryParse(Convert.ToString(changeEventArgs.Value, CultureInfo.InvariantCulture), NumberStyles.Float, CultureInfo.InvariantCulture, out var nextValue))
+        {
+            await OnSetCameraButtonOpacity.InvokeAsync(nextValue);
+        }
+    }
+
+    private static bool GetBoolean(ChangeEventArgs changeEventArgs) => changeEventArgs.Value is bool value && value;
+}

@@ -1,0 +1,148 @@
+@implements IAsyncDisposable
+@inject VideoCameraService VideoCameraService
+
+<section class="camera-screen @CameraStyleClass">
+    <video id="@VideoElementIdentifier" class="camera-preview" autoplay playsinline muted></video>
+
+    @if (!CameraIsAvailable)
+    {
+        <div class="camera-fallback">
+            <h2>@GermanText.CameraAccessMissing</h2>
+            <p>@CameraErrorText</p>
+            <button class="button primary-button" @onclick="StartCamera">@GermanText.AllowCamera</button>
+            <button class="button" @onclick="OnShowControls">@GermanText.ShowControls</button>
+            <button class="button" @onclick="OnBack">@GermanText.Back</button>
+        </div>
+    }
+
+    <button class="camera-touch-layer" aria-label="@GermanText.ShowControls" @onclick="OnShowControls"></button>
+    <div class="viewfinder-layer" aria-hidden="true">
+        <span class="viewfinder-horizontal"></span>
+        <span class="viewfinder-vertical"></span>
+        <span class="viewfinder-frame"></span>
+    </div>
+
+    @if (State.IsFakeVideoPaused)
+    {
+        <div class="fake-pause-overlay">@GermanText.Pause</div>
+    }
+
+    <div class="camera-hud">
+        <span class="recording-badge"><span class="recording-dot"></span> REC @ApplicationStateStore.FormatRecordingDuration(State.RecordingElapsedSeconds)</span>
+        <button class="camera-title-button" @onclick="OnShowControls">@GermanText.GetModeLabel(State.FullScreenMode ?? State.SelectedMode)</button>
+        <span>@GermanText.GetCameraViewStyleLabel(State.SelectedCameraViewStyle)</span>
+    </div>
+
+    @if (State.AreFullScreenControlsVisible)
+    {
+        <div class="full-screen-overlay @HiddenControlsClass" style="@OverlayOpacityStyle">
+            <div class="overlay-actions">
+                <button class="button" @onclick="OnBack">@GermanText.Back</button>
+                <button class="button" disabled="@ControlsAreDisabled" @onclick="OnClearDisplay">⌫</button>
+                <button class="button" @onclick="OnHideControls">@GermanText.HideControls</button>
+            </div>
+            <div class="full-screen-control-surface">
+                <CommandControls
+                    ControlsAreDisabled="ControlsAreDisabled"
+                    SelectedMode="@(State.FullScreenMode ?? State.SelectedMode)"
+                    SelectedSuitCode="State.SelectedSuitCode"
+                    SymbolText="State.SymbolText"
+                    OnSelectCardSuit="OnSelectCardSuit"
+                    OnSendCardRank="OnSendCardRank"
+                    OnSendCommand="OnSendCommand"
+                    OnSendSymbol="OnSendSymbol"
+                    OnSetSymbolText="OnSetSymbolText" />
+            </div>
+        </div>
+    }
+
+    <div class="camera-bottom-hud">
+        <button class="fake-pause-button"
+                aria-label="@(State.IsFakeVideoPaused ? GermanText.ContinueVideo : GermanText.PauseVideo)"
+                @onclick="@(() => OnSetFakeVideoPaused.InvokeAsync(!State.IsFakeVideoPaused))">
+            @(State.IsFakeVideoPaused ? "▶" : "⏸")
+        </button>
+        <label class="zoom-control">
+            <span>@GermanText.Zoom @CameraZoomText</span>
+            <input type="range" min="0" max="@AppConstants.MaximumCameraZoom" step="0.01" value="@State.CameraZoom" @onchange="ChangeZoom" />
+        </label>
+    </div>
+</section>
+
+@code {
+    private const string VideoElementIdentifier = "ble-prompter-camera-preview";
+    private bool cameraStartWasRequested;
+    private bool CameraIsAvailable { get; set; } = true;
+    private string CameraErrorText { get; set; } = GermanText.AllowCameraAccess;
+
+    [Parameter, EditorRequired] public ApplicationState State { get; set; } = new();
+    [Parameter, EditorRequired] public EventCallback OnBack { get; set; }
+    [Parameter, EditorRequired] public EventCallback OnClearDisplay { get; set; }
+    [Parameter, EditorRequired] public EventCallback OnHideControls { get; set; }
+    [Parameter, EditorRequired] public EventCallback OnShowControls { get; set; }
+    [Parameter, EditorRequired] public EventCallback<string> OnSelectCardSuit { get; set; }
+    [Parameter, EditorRequired] public EventCallback<string> OnSendCardRank { get; set; }
+    [Parameter, EditorRequired] public EventCallback<string> OnSendCommand { get; set; }
+    [Parameter, EditorRequired] public EventCallback OnSendSymbol { get; set; }
+    [Parameter, EditorRequired] public EventCallback<bool> OnSetFakeVideoPaused { get; set; }
+    [Parameter, EditorRequired] public EventCallback<string> OnSetSymbolText { get; set; }
+    [Parameter, EditorRequired] public EventCallback<double> OnSetZoom { get; set; }
+
+    private bool ControlsAreDisabled => !State.IsConnected && !State.IsTestModeEnabled;
+    private string CameraZoomText => $"{Math.Round(State.CameraZoom * 100)} %";
+    private string CameraStyleClass => State.SelectedCameraViewStyle switch
+    {
+        CameraViewStyle.Ios => "camera-ios",
+        CameraViewStyle.Fantasy => "camera-fantasy",
+        _ => "camera-android"
+    };
+    private string HiddenControlsClass => State.SelectedCameraButtonAppearance == CameraButtonAppearance.Normal ? "" : "is-subtle";
+    private string OverlayOpacityStyle => State.SelectedCameraButtonAppearance == CameraButtonAppearance.Normal
+        ? ""
+        : $"--camera-control-opacity: {ApplicationStateStore.GetCameraButtonOpacity(State.SelectedCameraButtonAppearance, State.CustomCameraButtonOpacity).ToString(CultureInfo.InvariantCulture)};";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await StartCamera();
+        }
+    }
+
+    private async Task StartCamera()
+    {
+        cameraStartWasRequested = true;
+        try
+        {
+            await VideoCameraService.StartCameraAsync(VideoElementIdentifier, State.CameraZoom);
+            CameraIsAvailable = true;
+        }
+        catch (Exception exception)
+        {
+            CameraIsAvailable = false;
+            CameraErrorText = string.IsNullOrWhiteSpace(exception.Message) ? GermanText.AllowCameraAccess : exception.Message;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ChangeZoom(ChangeEventArgs changeEventArgs)
+    {
+        if (!double.TryParse(Convert.ToString(changeEventArgs.Value, CultureInfo.InvariantCulture), NumberStyles.Float, CultureInfo.InvariantCulture, out var nextZoom))
+        {
+            return;
+        }
+
+        await OnSetZoom.InvokeAsync(nextZoom);
+
+        if (cameraStartWasRequested)
+        {
+            await VideoCameraService.SetZoomAsync(VideoElementIdentifier, nextZoom);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await VideoCameraService.StopCameraAsync(VideoElementIdentifier);
+    }
+}
