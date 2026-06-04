@@ -18,6 +18,15 @@ public static class GermanText
     public const string Settings = "Einstellungen";
     public const string Log = "Log";
     public const string About = "About";
+    public const string Help = "Hilfe";
+    public const string OpenHelp = "Hilfe öffnen";
+    public const string CloseHelp = "Hilfe schließen";
+    public const string ElementHelp = "Hilfe zu diesem Element";
+    public const string MoreHelpTopics = "Weitere Hilfethemen";
+    public const string HelpOverview = "Hilfeübersicht";
+    public const string HelpTextMissing = "Der Hilfetext konnte nicht geladen werden.";
+    public const string SelectHelpTopic = "Wähle ein Hilfethema aus der Liste.";
+    public const string HelpSystemHidden = "Hilfesystem ausblenden";
     public const string Connect = "Verbinden";
     public const string ConnectAgain = "Zuletzt genutztes Gerät verbinden";
     public const string Disconnect = "Trennen";
@@ -88,6 +97,8 @@ public static class GermanText
         MenuItem.About => About,
         _ => Client
     };
+
+    public static string GetHelpButtonLabel(string title) => $"{OpenHelp}: {title}";
 
     public static string GetModeLabel(ModeLabel modeLabel) => modeLabel switch
     {

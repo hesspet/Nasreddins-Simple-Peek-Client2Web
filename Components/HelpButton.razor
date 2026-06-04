@@ -1,0 +1,17 @@
+@if (IsVisible)
+{
+    <button class="help-button"
+            type="button"
+            aria-label="@GermanText.GetHelpButtonLabel(Title)"
+            title="@GermanText.GetHelpButtonLabel(Title)"
+            @onclick="@(() => OnOpenHelp.InvokeAsync(HelpIdentifier))">
+        ?
+    </button>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; } = true;
+    [Parameter, EditorRequired] public string HelpIdentifier { get; set; } = "";
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter, EditorRequired] public EventCallback<string> OnOpenHelp { get; set; }
+}

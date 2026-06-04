@@ -1,0 +1,100 @@
+[
+  {
+    "id": "view-peeker",
+    "title": "Peeker verwenden",
+    "scope": "view",
+    "context": "client",
+    "file": "views/peeker.md"
+  },
+  {
+    "id": "view-settings",
+    "title": "Einstellungen",
+    "scope": "view",
+    "context": "settings",
+    "file": "views/einstellungen.md"
+  },
+  {
+    "id": "view-log",
+    "title": "Log",
+    "scope": "view",
+    "context": "log",
+    "file": "views/log.md"
+  },
+  {
+    "id": "view-about",
+    "title": "About",
+    "scope": "view",
+    "context": "about",
+    "file": "views/about.md"
+  },
+  {
+    "id": "view-fullscreen",
+    "title": "Vollbild-Bedienung",
+    "scope": "view",
+    "context": "fullscreen",
+    "file": "views/vollbild.md"
+  },
+  {
+    "id": "element-connect",
+    "title": "Bluetooth verbinden",
+    "scope": "element",
+    "context": "client",
+    "file": "elements/bluetooth-verbinden.md"
+  },
+  {
+    "id": "element-reconnect",
+    "title": "Zuletzt genutztes Gerät",
+    "scope": "element",
+    "context": "client",
+    "file": "elements/zuletzt-genutztes-geraet.md"
+  },
+  {
+    "id": "element-search-sleeping-device",
+    "title": "Schlafendes Gerät suchen",
+    "scope": "element",
+    "context": "client",
+    "file": "elements/schlafendes-geraet-suchen.md"
+  },
+  {
+    "id": "element-test-mode",
+    "title": "Testmodus",
+    "scope": "element",
+    "context": "client",
+    "file": "elements/testmodus.md"
+  },
+  {
+    "id": "element-clear-display",
+    "title": "Anzeige löschen",
+    "scope": "element",
+    "context": "client",
+    "file": "elements/anzeige-loeschen.md"
+  },
+  {
+    "id": "element-hide-help-system",
+    "title": "Hilfesystem ausblenden",
+    "scope": "element",
+    "context": "settings",
+    "file": "elements/hilfesystem-ausblenden.md"
+  },
+  {
+    "id": "element-display-inverted",
+    "title": "Display invertieren",
+    "scope": "element",
+    "context": "settings",
+    "file": "elements/display-invertieren.md"
+  },
+  {
+    "id": "element-cyclic-sleep",
+    "title": "Zyklischer Schlaf",
+    "scope": "element",
+    "context": "settings",
+    "file": "elements/zyklischer-schlaf.md"
+  },
+  {
+    "id": "element-camera-controls",
+    "title": "Kamera-Bedienung",
+    "scope": "element",
+    "context": "settings",
+    "file": "elements/kamera-bedienung.md"
+  }
+]

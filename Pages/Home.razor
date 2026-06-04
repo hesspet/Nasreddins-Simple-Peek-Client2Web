@@ -12,6 +12,7 @@
 {
     <VideoFullScreen
         State="State"
+        IsHelpVisible="IsHelpVisible"
         OnBack="CloseFullScreenMode"
         OnClearDisplay="CommandService.ClearDisplayAsync"
         OnHideControls="@(() => UpdateState(currentState => currentState with { AreFullScreenControlsVisible = false }))"
@@ -22,7 +23,8 @@
         OnSendSymbol="CommandService.SendSymbolAsync"
         OnSetFakeVideoPaused="SetFakeVideoPaused"
         OnSetSymbolText="SetSymbolText"
-        OnSetZoom="SetCameraZoom" />
+        OnSetZoom="SetCameraZoom"
+        OnOpenHelp="OpenHelp" />
 }
 else
 {
@@ -45,6 +47,13 @@ else
                             <span>@GermanText.GetMenuLabel(menuItem)</span>
                         </button>
                     }
+                    @if (IsHelpVisible)
+                    {
+                        <button class="drawer-item" @onclick="@(() => OpenHelp(AppConstants.HelpOverviewIdentifier))">
+                            <span class="drawer-indicator"></span>
+                            <span>@GermanText.Help</span>
+                        </button>
+                    }
                 </nav>
             </aside>
             <button class="drawer-dismiss" aria-label="@GermanText.CloseMenu" @onclick="CloseMenu"></button>
@@ -61,6 +70,7 @@ else
                         </div>
                         <p class="metadata-line">@MetadataLine</p>
                     </div>
+                    <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@CurrentViewHelpIdentifier" Title="@CurrentViewHelpTitle" OnOpenHelp="OpenHelp" />
                 </div>
                 <div class="header-status-row">
                     <span class="connection-state @(State.IsConnected || State.IsTestModeEnabled ? "is-connected" : "")">
@@ -76,11 +86,13 @@ else
             {
                 <ClientPanel
                     State="State"
+                    IsHelpVisible="IsHelpVisible"
                     OnCancelBluetoothOperation="CancelBluetoothOperation"
                     OnClearDisplay="CommandService.ClearDisplayAsync"
                     OnConnect="Connect"
                     OnDisconnect="Disconnect"
                     OnOpenFullScreenMode="OpenFullScreenMode"
+                    OnOpenHelp="OpenHelp"
                     OnReconnect="ReconnectRememberedDevice"
                     OnSearchSleepingDevice="SearchSleepingDevice"
                     OnSetTestMode="SetTestMode" />
@@ -89,6 +101,7 @@ else
             {
                 <SettingsPanel
                     State="State"
+                    IsHelpVisible="IsHelpVisible"
                     OnSendCycleSleepCommand="CommandService.SendCycleSleepCommandAsync"
                     OnSetCameraButtonAppearance="SetCameraButtonAppearance"
                     OnSetCameraButtonOpacity="SetCameraButtonOpacity"
@@ -98,6 +111,8 @@ else
                     OnSetDarkMode="SetDarkMode"
                     OnSetDisplayInverted="SetDisplayInverted"
                     OnSetDisplayRotated="SetDisplayRotated"
+                    OnSetHelpSystemHidden="SetHelpSystemHidden"
+                    OnOpenHelp="OpenHelp"
                     OnSetShouldCloseButtonViewAfterSend="SetShouldCloseButtonViewAfterSend"
                     OnSetShouldSkipSleepDisplayAfterClearDisplay="SetShouldSkipSleepDisplayAfterClearDisplay" />
             }
@@ -113,13 +128,31 @@ else
     </div>
 }
 
+<HelpSheet
+    IsOpen="isHelpSheetOpen"
+    IsDarkTheme="State.IsDarkModeEnabled"
+    HelpIdentifier="@activeHelpIdentifier"
+    OnClose="CloseHelp"
+    OnSelectHelp="OpenHelp" />
+
 @code {
     private bool haveSettingsLoaded;
+    private bool isHelpSheetOpen;
+    private string activeHelpIdentifier = AppConstants.HelpOverviewIdentifier;
     private Timer? recordingTimer;
     private ApplicationState State => StateStore.State;
+    private bool IsHelpVisible => !State.IsHelpSystemHidden;
     private string PageClass => State.IsDarkModeEnabled ? "app-root dark-theme" : "app-root";
     private string MetadataLine => GermanText.GetMetadataLine(BuildTimestampText);
     private static string BuildTimestampText { get; } = GetBuildTimestampText();
+    private string CurrentViewHelpIdentifier => State.SelectedMenuItem switch
+    {
+        MenuItem.Einstellungen => AppConstants.SettingsHelpIdentifier,
+        MenuItem.Log => AppConstants.LogHelpIdentifier,
+        MenuItem.About => AppConstants.AboutHelpIdentifier,
+        _ => AppConstants.ClientHelpIdentifier
+    };
+    private string CurrentViewHelpTitle => GermanText.GetMenuLabel(State.SelectedMenuItem);
 
     protected override async Task OnInitializedAsync()
     {
@@ -173,6 +206,23 @@ else
     private void OpenMenu() => UpdateState(currentState => currentState with { IsMenuOpen = true });
 
     private void CloseMenu() => UpdateState(currentState => currentState with { IsMenuOpen = false });
+
+    private void OpenHelp(string helpIdentifier)
+    {
+        if (!IsHelpVisible)
+        {
+            return;
+        }
+
+        activeHelpIdentifier = helpIdentifier;
+        isHelpSheetOpen = true;
+        UpdateState(currentState => currentState with { IsMenuOpen = false });
+    }
+
+    private void CloseHelp()
+    {
+        isHelpSheetOpen = false;
+    }
 
     private void SelectMenuItem(MenuItem menuItem)
     {
@@ -281,6 +331,16 @@ else
 
     private async Task SetDarkMode(bool nextValue) =>
         await UpdateStateAndSaveAsync(currentState => currentState with { IsDarkModeEnabled = nextValue });
+
+    private async Task SetHelpSystemHidden(bool nextValue)
+    {
+        if (nextValue)
+        {
+            isHelpSheetOpen = false;
+        }
+
+        await UpdateStateAndSaveAsync(currentState => currentState with { IsHelpSystemHidden = nextValue });
+    }
 
     private async Task SetShouldCloseButtonViewAfterSend(bool nextValue) =>
         await UpdateStateAndSaveAsync(currentState => currentState with { ShouldCloseButtonViewAfterSend = nextValue });

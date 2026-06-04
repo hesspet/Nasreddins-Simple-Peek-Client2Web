@@ -40,6 +40,7 @@
                 <button class="button" @onclick="OnBack">@GermanText.Back</button>
                 <button class="button" disabled="@ControlsAreDisabled" @onclick="OnClearDisplay">⌫</button>
                 <button class="button" @onclick="OnHideControls">@GermanText.HideControls</button>
+                <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.FullScreenHelpIdentifier" Title="@GermanText.Help" OnOpenHelp="OnOpenHelp" />
             </div>
             <div class="full-screen-control-surface">
                 <CommandControls
@@ -76,6 +77,7 @@
     private string CameraErrorText { get; set; } = GermanText.AllowCameraAccess;
 
     [Parameter, EditorRequired] public ApplicationState State { get; set; } = new();
+    [Parameter] public bool IsHelpVisible { get; set; }
     [Parameter, EditorRequired] public EventCallback OnBack { get; set; }
     [Parameter, EditorRequired] public EventCallback OnClearDisplay { get; set; }
     [Parameter, EditorRequired] public EventCallback OnHideControls { get; set; }
@@ -84,6 +86,7 @@
     [Parameter, EditorRequired] public EventCallback<string> OnSendCardRank { get; set; }
     [Parameter, EditorRequired] public EventCallback<string> OnSendCommand { get; set; }
     [Parameter, EditorRequired] public EventCallback OnSendSymbol { get; set; }
+    [Parameter, EditorRequired] public EventCallback<string> OnOpenHelp { get; set; }
     [Parameter, EditorRequired] public EventCallback<bool> OnSetFakeVideoPaused { get; set; }
     [Parameter, EditorRequired] public EventCallback<string> OnSetSymbolText { get; set; }
     [Parameter, EditorRequired] public EventCallback<double> OnSetZoom { get; set; }

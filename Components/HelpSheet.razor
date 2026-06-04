@@ -1,0 +1,144 @@
+@inject HelpContentService HelpContentService
+
+@if (IsOpen)
+{
+    <div class="help-backdrop @(IsDarkTheme ? "dark-theme" : "")">
+        <button class="help-dismiss" type="button" aria-label="@GermanText.CloseHelp" @onclick="OnClose"></button>
+        <section class="help-sheet" role="dialog" aria-modal="true" aria-labelledby="help-sheet-title">
+            <header class="help-sheet-header">
+                <div>
+                    <p class="help-sheet-kicker">@GermanText.Help</p>
+                    <h2 id="help-sheet-title">@CurrentTitle</h2>
+                </div>
+                <button class="icon-button" type="button" aria-label="@GermanText.CloseHelp" @onclick="OnClose">×</button>
+            </header>
+
+            <div class="help-content">
+                @foreach (var helpLine in RenderedHelpLines)
+                {
+                    if (helpLine.Kind == HelpLineKind.Heading)
+                    {
+                        <h3>@helpLine.Text</h3>
+                    }
+                    else if (helpLine.Kind == HelpLineKind.ListItem)
+                    {
+                        <p class="help-list-item">@helpLine.Text</p>
+                    }
+                    else
+                    {
+                        <p>@helpLine.Text</p>
+                    }
+                }
+            </div>
+
+            @if (AvailableTopics.Count > 0)
+            {
+                <div class="help-topic-list">
+                    <h3>@GermanText.MoreHelpTopics</h3>
+                    @foreach (var helpTopic in AvailableTopics)
+                    {
+                        <button class="help-topic-button"
+                                type="button"
+                                @onclick="@(() => OnSelectHelp.InvokeAsync(helpTopic.Id))">
+                            @helpTopic.Title
+                        </button>
+                    }
+                </div>
+            }
+        </section>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public bool IsDarkTheme { get; set; }
+    [Parameter] public string HelpIdentifier { get; set; } = AppConstants.HelpOverviewIdentifier;
+    [Parameter, EditorRequired] public EventCallback OnClose { get; set; }
+    [Parameter, EditorRequired] public EventCallback<string> OnSelectHelp { get; set; }
+
+    private string loadedHelpIdentifier = "";
+    private string CurrentTitle { get; set; } = GermanText.Help;
+    private IReadOnlyList<HelpLine> RenderedHelpLines { get; set; } = Array.Empty<HelpLine>();
+    private IReadOnlyList<HelpTopic> AvailableTopics { get; set; } = Array.Empty<HelpTopic>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!IsOpen || string.Equals(loadedHelpIdentifier, HelpIdentifier, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        loadedHelpIdentifier = HelpIdentifier;
+        var helpTopics = await HelpContentService.GetHelpTopicsAsync();
+        AvailableTopics = helpTopics
+            .Where(helpTopic => !string.Equals(helpTopic.Id, HelpIdentifier, StringComparison.Ordinal))
+            .ToArray();
+
+        if (string.Equals(HelpIdentifier, AppConstants.HelpOverviewIdentifier, StringComparison.Ordinal))
+        {
+            CurrentTitle = GermanText.HelpOverview;
+            RenderedHelpLines = [new HelpLine(HelpLineKind.Paragraph, GermanText.SelectHelpTopic)];
+            return;
+        }
+
+        var currentHelpTopic = helpTopics.FirstOrDefault(helpTopic => string.Equals(helpTopic.Id, HelpIdentifier, StringComparison.Ordinal));
+        if (currentHelpTopic is null)
+        {
+            CurrentTitle = GermanText.Help;
+            RenderedHelpLines = [new HelpLine(HelpLineKind.Paragraph, GermanText.HelpTextMissing)];
+            return;
+        }
+
+        CurrentTitle = currentHelpTopic.Title;
+        var markdownText = await HelpContentService.GetHelpMarkdownAsync(currentHelpTopic);
+        RenderedHelpLines = ParseMarkdown(markdownText);
+    }
+
+    private static IReadOnlyList<HelpLine> ParseMarkdown(string markdownText)
+    {
+        var helpLines = new List<HelpLine>();
+
+        foreach (var rawLine in markdownText.Split('\n'))
+        {
+            var line = rawLine.TrimEnd('\r').Trim();
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
+            if (line.StartsWith("### ", StringComparison.Ordinal))
+            {
+                helpLines.Add(new HelpLine(HelpLineKind.Heading, line[4..]));
+            }
+            else if (line.StartsWith("## ", StringComparison.Ordinal))
+            {
+                helpLines.Add(new HelpLine(HelpLineKind.Heading, line[3..]));
+            }
+            else if (line.StartsWith("# ", StringComparison.Ordinal))
+            {
+                helpLines.Add(new HelpLine(HelpLineKind.Heading, line[2..]));
+            }
+            else if (line.StartsWith("- ", StringComparison.Ordinal))
+            {
+                helpLines.Add(new HelpLine(HelpLineKind.ListItem, line[2..]));
+            }
+            else
+            {
+                helpLines.Add(new HelpLine(HelpLineKind.Paragraph, line));
+            }
+        }
+
+        return helpLines.Count == 0
+            ? [new HelpLine(HelpLineKind.Paragraph, GermanText.HelpTextMissing)]
+            : helpLines;
+    }
+
+    private enum HelpLineKind
+    {
+        Paragraph,
+        Heading,
+        ListItem
+    }
+
+    private sealed record HelpLine(HelpLineKind Kind, string Text);
+}

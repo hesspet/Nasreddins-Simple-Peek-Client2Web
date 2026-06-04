@@ -2,18 +2,27 @@
     <div class="toolbar">
         @if (!State.IsConnected && !State.IsTestModeEnabled)
         {
-            <button class="button primary-button" disabled="@State.IsBluetoothOperationRunning" @onclick="OnConnect">
-                @GermanText.Connect
-            </button>
+            <div class="control-with-help">
+                <button class="button primary-button" disabled="@State.IsBluetoothOperationRunning" @onclick="OnConnect">
+                    @GermanText.Connect
+                </button>
+                <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.ConnectHelpIdentifier" Title="@GermanText.Connect" OnOpenHelp="OnOpenHelp" />
+            </div>
             @if (State.RememberedBluetoothDevice is not null)
             {
-                <button class="button" disabled="@State.IsBluetoothOperationRunning" @onclick="OnReconnect">
-                    @GermanText.ConnectAgain
-                </button>
+                <div class="control-with-help">
+                    <button class="button" disabled="@State.IsBluetoothOperationRunning" @onclick="OnReconnect">
+                        @GermanText.ConnectAgain
+                    </button>
+                    <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.ReconnectHelpIdentifier" Title="@GermanText.ConnectAgain" OnOpenHelp="OnOpenHelp" />
+                </div>
             }
-            <button class="button" disabled="@State.IsBluetoothOperationRunning" @onclick="OnSearchSleepingDevice">
-                @GermanText.SearchSleepingDevice
-            </button>
+            <div class="control-with-help">
+                <button class="button" disabled="@State.IsBluetoothOperationRunning" @onclick="OnSearchSleepingDevice">
+                    @GermanText.SearchSleepingDevice
+                </button>
+                <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.SearchSleepingDeviceHelpIdentifier" Title="@GermanText.SearchSleepingDevice" OnOpenHelp="OnOpenHelp" />
+            </div>
         }
 
         @if (State.IsBluetoothOperationRunning)
@@ -24,9 +33,12 @@
         }
 
         <div class="toolbar-action-row">
-            <button class="button" disabled="@ControlsAreDisabled" @onclick="OnClearDisplay">
-                <span aria-hidden="true">⌫</span> @GermanText.ClearDisplay
-            </button>
+            <div class="control-with-help">
+                <button class="button" disabled="@ControlsAreDisabled" @onclick="OnClearDisplay">
+                    <span aria-hidden="true">⌫</span> @GermanText.ClearDisplay
+                </button>
+                <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.ClearDisplayHelpIdentifier" Title="@GermanText.ClearDisplay" OnOpenHelp="OnOpenHelp" />
+            </div>
             @if (State.IsConnected && !State.IsTestModeEnabled)
             {
                 <button class="button" @onclick="OnDisconnect">@GermanText.Disconnect</button>
@@ -38,6 +50,7 @@
             <label class="toggle-control">
                 <span>@GermanText.TestMode</span>
                 <input type="checkbox" checked="@State.IsTestModeEnabled" @onchange="ChangeTestMode" />
+                <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.TestModeHelpIdentifier" Title="@GermanText.TestMode" OnOpenHelp="OnOpenHelp" />
             </label>
         }
     </div>
@@ -99,11 +112,13 @@
 
 @code {
     [Parameter, EditorRequired] public ApplicationState State { get; set; } = new();
+    [Parameter] public bool IsHelpVisible { get; set; }
     [Parameter, EditorRequired] public EventCallback OnCancelBluetoothOperation { get; set; }
     [Parameter, EditorRequired] public EventCallback OnClearDisplay { get; set; }
     [Parameter, EditorRequired] public EventCallback OnConnect { get; set; }
     [Parameter, EditorRequired] public EventCallback OnDisconnect { get; set; }
     [Parameter, EditorRequired] public EventCallback<ModeLabel> OnOpenFullScreenMode { get; set; }
+    [Parameter, EditorRequired] public EventCallback<string> OnOpenHelp { get; set; }
     [Parameter, EditorRequired] public EventCallback OnReconnect { get; set; }
     [Parameter, EditorRequired] public EventCallback OnSearchSleepingDevice { get; set; }
     [Parameter, EditorRequired] public EventCallback<bool> OnSetTestMode { get; set; }

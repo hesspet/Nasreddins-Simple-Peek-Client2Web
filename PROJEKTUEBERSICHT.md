@@ -24,10 +24,12 @@ Dieses Projekt ist die Blazor-WebAssembly-PWA-Portierung von `C:\dev\Nasreddins-
 - `Services/BluetoothPrompterClient.cs`: C#-Fassade für Web Bluetooth.
 - `Services/CommandService.cs`: Sendelogik für `CL`, `SLEEP DISPLAY`, Karten, Pfeile, Text, ESP, Würfel und Schlafzyklus.
 - `Services/SettingsStorage.cs`: Persistenz über `localStorage`.
+- `Services/HelpContentService.cs`: Lädt den Hilfeindex und die Markdown-Hilfetexte aus `wwwroot/help/de`.
 - `Services/VideoCameraService.cs`: C#-Fassade für Kamera-/Zoom-Interop.
-- `Components/*.razor`: UI-Komponenten für Client, Einstellungen, Log, About, Command-Controls und Kamera-Vollbild.
+- `Components/*.razor`: UI-Komponenten für Client, Einstellungen, Log, About, Command-Controls, Hilfe und Kamera-Vollbild.
 - `Resources/GermanText.cs`: Zentraler deutscher Textkatalog für sichtbare UI-Texte.
 - `Resources/Strings.resx`: Platzhalter-/Basis-Ressourcendatei für spätere echte Ressourcenlokalisierung.
+- `wwwroot/help/de`: Pflegbare Markdown-Hilfetexte und `help-index.json`.
 - `wwwroot/js/webBluetooth.js`: Web-Bluetooth-Interop.
 - `wwwroot/js/videoCamera.js`: Kamera-Interop.
 - `.github/workflows/deploy-github-pages.yml`: GitHub-Pages-Deployment.
@@ -60,6 +62,8 @@ Dieses Projekt ist die Blazor-WebAssembly-PWA-Portierung von `C:\dev\Nasreddins-
 ## Funktionsumfang
 
 - Menü mit `Peeker (Videofake)`, `Einstellungen`, `Log` und `About`.
+- Hilfesystem mit Ansichtshilfe, granularer Elementhilfe per `?`-Button und pflegbaren Markdown-Texten.
+- In den Einstellungen kann das Hilfesystem direkt oben ausgeblendet werden; standardmäßig ist es eingeblendet.
 - Testmodus ohne Bluetooth.
 - Web-Bluetooth-Verbindung per Benutzeraktion.
 - Reconnect für bereits freigegebene Geräte, wenn der Browser `navigator.bluetooth.getDevices` unterstützt.

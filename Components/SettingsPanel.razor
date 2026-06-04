@@ -1,5 +1,10 @@
 <section class="panel settings-panel">
     <label class="toggle-control">
+        <span>@GermanText.HelpSystemHidden</span>
+        <input type="checkbox" checked="@State.IsHelpSystemHidden" @onchange="ChangeHelpSystemHidden" />
+        <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.HideHelpSystemHelpIdentifier" Title="@GermanText.HelpSystemHidden" OnOpenHelp="OnOpenHelp" />
+    </label>
+    <label class="toggle-control">
         <span>@GermanText.DarkMode</span>
         <input type="checkbox" checked="@State.IsDarkModeEnabled" @onchange="ChangeDarkMode" />
     </label>
@@ -13,6 +18,7 @@
         <label class="toggle-control">
             <span>@GermanText.DisplayInverted</span>
             <input type="checkbox" checked="@State.IsDisplayInverted" @onchange="ChangeDisplayInverted" />
+            <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.DisplayInvertedHelpIdentifier" Title="@GermanText.DisplayInverted" OnOpenHelp="OnOpenHelp" />
         </label>
         <label class="toggle-control">
             <span>@GermanText.DisplayRotated</span>
@@ -25,7 +31,10 @@
     </div>
 
     <div class="settings-group">
-        <h3>@GermanText.CyclicSleep</h3>
+        <div class="settings-heading-with-help">
+            <h3>@GermanText.CyclicSleep</h3>
+            <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.CyclicSleepHelpIdentifier" Title="@GermanText.CyclicSleep" OnOpenHelp="OnOpenHelp" />
+        </div>
         <div class="cycle-setting-row">
             <span>@GermanText.SleepDuration</span>
             <div class="stepper-row">
@@ -59,7 +68,10 @@
     </div>
 
     <div class="settings-group">
-        <h3>@GermanText.CameraControls</h3>
+        <div class="settings-heading-with-help">
+            <h3>@GermanText.CameraControls</h3>
+            <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.CameraControlsHelpIdentifier" Title="@GermanText.CameraControls" OnOpenHelp="OnOpenHelp" />
+        </div>
         <div class="segmented-options">
             @foreach (var cameraButtonAppearance in AppConstants.CameraButtonAppearances)
             {
@@ -86,6 +98,7 @@
 
 @code {
     [Parameter, EditorRequired] public ApplicationState State { get; set; } = new();
+    [Parameter] public bool IsHelpVisible { get; set; }
     [Parameter, EditorRequired] public EventCallback OnSendCycleSleepCommand { get; set; }
     [Parameter, EditorRequired] public EventCallback<CameraButtonAppearance> OnSetCameraButtonAppearance { get; set; }
     [Parameter, EditorRequired] public EventCallback<double> OnSetCameraButtonOpacity { get; set; }
@@ -95,6 +108,8 @@
     [Parameter, EditorRequired] public EventCallback<bool> OnSetDarkMode { get; set; }
     [Parameter, EditorRequired] public EventCallback<bool> OnSetDisplayInverted { get; set; }
     [Parameter, EditorRequired] public EventCallback<bool> OnSetDisplayRotated { get; set; }
+    [Parameter, EditorRequired] public EventCallback<bool> OnSetHelpSystemHidden { get; set; }
+    [Parameter, EditorRequired] public EventCallback<string> OnOpenHelp { get; set; }
     [Parameter, EditorRequired] public EventCallback<bool> OnSetShouldCloseButtonViewAfterSend { get; set; }
     [Parameter, EditorRequired] public EventCallback<bool> OnSetShouldSkipSleepDisplayAfterClearDisplay { get; set; }
 
@@ -107,6 +122,7 @@
     private async Task ChangeDarkMode(ChangeEventArgs changeEventArgs) => await OnSetDarkMode.InvokeAsync(GetBoolean(changeEventArgs));
     private async Task ChangeDisplayInverted(ChangeEventArgs changeEventArgs) => await OnSetDisplayInverted.InvokeAsync(GetBoolean(changeEventArgs));
     private async Task ChangeDisplayRotated(ChangeEventArgs changeEventArgs) => await OnSetDisplayRotated.InvokeAsync(GetBoolean(changeEventArgs));
+    private async Task ChangeHelpSystemHidden(ChangeEventArgs changeEventArgs) => await OnSetHelpSystemHidden.InvokeAsync(GetBoolean(changeEventArgs));
     private async Task ChangeShouldCloseButtonViewAfterSend(ChangeEventArgs changeEventArgs) => await OnSetShouldCloseButtonViewAfterSend.InvokeAsync(GetBoolean(changeEventArgs));
     private async Task ChangeShouldSkipSleepDisplayAfterClearDisplay(ChangeEventArgs changeEventArgs) => await OnSetShouldSkipSleepDisplayAfterClearDisplay.InvokeAsync(GetBoolean(changeEventArgs));
 

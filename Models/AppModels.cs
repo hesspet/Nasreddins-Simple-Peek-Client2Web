@@ -60,6 +60,15 @@ public sealed record RankOption(string Label, string Code);
 
 public sealed record SymbolCommand(string Label, string Command, string Symbol);
 
+public sealed record HelpTopic
+{
+    public string Id { get; init; } = "";
+    public string Title { get; init; } = "";
+    public string Scope { get; init; } = "";
+    public string Context { get; init; } = "";
+    public string File { get; init; } = "";
+}
+
 public sealed record BluetoothDeviceInformation(
     string Id,
     string Name,
@@ -83,6 +92,7 @@ public sealed record PersistedApplicationSettings
     public bool IsDarkModeEnabled { get; init; }
     public bool IsDisplayInverted { get; init; }
     public bool IsDisplayRotated { get; init; }
+    public bool IsHelpSystemHidden { get; init; }
     public bool ShouldCloseButtonViewAfterSend { get; init; } = true;
     public bool ShouldSkipSleepDisplayAfterClearDisplay { get; init; }
     public CameraViewStyle SelectedCameraViewStyle { get; init; } = CameraViewStyle.Android;
@@ -98,6 +108,7 @@ public sealed record ApplicationState
     public MenuItem SelectedMenuItem { get; init; } = MenuItem.Client;
     public bool IsMenuOpen { get; init; }
     public bool IsDarkModeEnabled { get; init; }
+    public bool IsHelpSystemHidden { get; init; }
     public bool ShouldCloseButtonViewAfterSend { get; init; } = true;
     public bool ShouldSkipSleepDisplayAfterClearDisplay { get; init; }
     public CameraViewStyle SelectedCameraViewStyle { get; init; } = CameraViewStyle.Android;
@@ -133,6 +144,21 @@ public sealed record ApplicationState
 
 public static class AppConstants
 {
+    public const string HelpOverviewIdentifier = "overview";
+    public const string ClientHelpIdentifier = "view-peeker";
+    public const string SettingsHelpIdentifier = "view-settings";
+    public const string FullScreenHelpIdentifier = "view-fullscreen";
+    public const string LogHelpIdentifier = "view-log";
+    public const string AboutHelpIdentifier = "view-about";
+    public const string ConnectHelpIdentifier = "element-connect";
+    public const string ReconnectHelpIdentifier = "element-reconnect";
+    public const string SearchSleepingDeviceHelpIdentifier = "element-search-sleeping-device";
+    public const string TestModeHelpIdentifier = "element-test-mode";
+    public const string ClearDisplayHelpIdentifier = "element-clear-display";
+    public const string HideHelpSystemHelpIdentifier = "element-hide-help-system";
+    public const string DisplayInvertedHelpIdentifier = "element-display-inverted";
+    public const string CyclicSleepHelpIdentifier = "element-cyclic-sleep";
+    public const string CameraControlsHelpIdentifier = "element-camera-controls";
     public const string BluetoothPrompterServiceUuid = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
     public const string BluetoothPrompterReceiveCharacteristicUuid = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
     public const string BluetoothPrompterTransmitCharacteristicUuid = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";

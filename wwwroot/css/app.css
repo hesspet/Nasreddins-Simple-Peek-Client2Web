@@ -114,7 +114,8 @@ p {
 }
 
 .icon-button,
-.fake-pause-button {
+.fake-pause-button,
+.help-button {
     display: inline-grid;
     place-items: center;
     width: 44px;
@@ -127,10 +128,20 @@ p {
 }
 
 .dark-theme .icon-button,
-.dark-theme .fake-pause-button {
+.dark-theme .fake-pause-button,
+.dark-theme .help-button {
     border-color: rgba(255, 255, 255, 0.22);
     background: #1b2728;
     color: #d7f5ee;
+}
+
+.help-button {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    border-radius: 50%;
+    padding: 0;
+    font-size: 0.95rem;
 }
 
 .connection-state {
@@ -200,6 +211,25 @@ p {
     flex-wrap: wrap;
 }
 
+.control-with-help,
+.settings-heading-with-help {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.control-with-help {
+    flex-wrap: nowrap;
+}
+
+.settings-heading-with-help {
+    justify-content: space-between;
+}
+
+.settings-heading-with-help h3 {
+    margin: 0;
+}
+
 .button,
 .mode-tab,
 .camera-command-button,
@@ -260,6 +290,11 @@ p {
     justify-content: space-between;
     gap: 14px;
     min-height: 44px;
+}
+
+.toggle-control {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
 }
 
 .toggle-control input {
@@ -404,6 +439,116 @@ p {
 
 .drawer-item.is-active .drawer-indicator {
     background: #0e4f56;
+}
+
+.help-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: grid;
+    align-items: end;
+    background: rgba(0, 0, 0, 0.42);
+}
+
+.help-dismiss {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background: transparent;
+}
+
+.help-sheet {
+    position: relative;
+    z-index: 1;
+    width: min(760px, 100%);
+    max-height: min(82vh, 720px);
+    margin: 0 auto;
+    overflow: auto;
+    border: 1px solid rgba(14, 79, 86, 0.16);
+    border-radius: 8px 8px 0 0;
+    background: #fbfaf6;
+    color: #162527;
+    box-shadow: 0 -18px 60px rgba(0, 0, 0, 0.22);
+    padding: 16px;
+}
+
+.dark-theme .help-sheet {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: #172223;
+    color: #ecf5f1;
+}
+
+.help-sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    padding-bottom: 10px;
+}
+
+.help-sheet-kicker {
+    margin-bottom: 4px;
+    color: #687777;
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.dark-theme .help-sheet-kicker {
+    color: #a5b3b0;
+}
+
+.help-sheet h2 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.help-content {
+    line-height: 1.5;
+}
+
+.help-content h3,
+.help-topic-list h3 {
+    margin: 14px 0 6px;
+    font-size: 1rem;
+}
+
+.help-list-item {
+    padding-left: 18px;
+}
+
+.help-list-item::before {
+    content: "• ";
+    margin-left: -14px;
+}
+
+.help-topic-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(14, 79, 86, 0.14);
+}
+
+.help-topic-button {
+    border: 1px solid rgba(14, 79, 86, 0.18);
+    border-radius: 8px;
+    background: #ffffff;
+    color: #183033;
+    min-height: 42px;
+    padding: 9px 11px;
+    text-align: left;
+    font-weight: 700;
+}
+
+.dark-theme .help-topic-list {
+    border-top-color: rgba(255, 255, 255, 0.12);
+}
+
+.dark-theme .help-topic-button {
+    border-color: rgba(255, 255, 255, 0.16);
+    background: #223032;
+    color: #edf6f2;
 }
 
 .log-list {

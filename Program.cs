@@ -12,6 +12,7 @@ builder.Services.AddSingleton<ApplicationStateStore>();
 builder.Services.AddScoped<SettingsStorage>();
 builder.Services.AddScoped<BluetoothPrompterClient>();
 builder.Services.AddScoped<CommandService>();
+builder.Services.AddScoped<HelpContentService>();
 builder.Services.AddScoped<VideoCameraService>();
 
 await builder.Build().RunAsync();
