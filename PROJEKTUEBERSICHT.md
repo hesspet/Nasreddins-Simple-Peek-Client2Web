@@ -127,14 +127,6 @@ netstat -ano | Select-String -Pattern ':5088'
 
 und ein versehentlich laufender `dotnet.exe` gezielt beendet werden.
 
-## Offene Tests
-
-- Echte BLE-Verbindung auf Android Chrome gegen BlePrompter-Hardware.
-- Echte BLE-Verbindung auf iOS Bluefy.
-- Kamera- und Overlay-Verhalten auf Smartphone in Hoch- und Querformat.
-- GitHub-Pages-Deployment nach Push zu `main`.
-- PWA-Installation über Android Chrome und Bluefy prüfen.
-
 ## Projektregeln
 
 - Alle sichtbaren Texte sind deutsch.

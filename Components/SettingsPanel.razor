@@ -74,10 +74,10 @@
             <label class="range-control">
                 <span>@GermanText.Opacity: @CameraButtonOpacityText</span>
                 <input type="range"
-                       min="@AppConstants.MinimumCameraButtonOpacity"
-                       max="@AppConstants.MaximumCameraButtonOpacity"
+                       min="@MinimumCameraButtonOpacityValue"
+                       max="@MaximumCameraButtonOpacityValue"
                        step="0.01"
-                       value="@State.CustomCameraButtonOpacity"
+                       value="@CustomCameraButtonOpacityValue"
                        @onchange="ChangeCameraButtonOpacity" />
             </label>
         }
@@ -100,6 +100,9 @@
 
     private string CameraButtonOpacityText =>
         $"{Math.Round(ApplicationStateStore.GetCameraButtonOpacity(State.SelectedCameraButtonAppearance, State.CustomCameraButtonOpacity) * 100)} %";
+    private static string MinimumCameraButtonOpacityValue => AppConstants.MinimumCameraButtonOpacity.ToString(CultureInfo.InvariantCulture);
+    private static string MaximumCameraButtonOpacityValue => AppConstants.MaximumCameraButtonOpacity.ToString(CultureInfo.InvariantCulture);
+    private string CustomCameraButtonOpacityValue => State.CustomCameraButtonOpacity.ToString(CultureInfo.InvariantCulture);
 
     private async Task ChangeDarkMode(ChangeEventArgs changeEventArgs) => await OnSetDarkMode.InvokeAsync(GetBoolean(changeEventArgs));
     private async Task ChangeDisplayInverted(ChangeEventArgs changeEventArgs) => await OnSetDisplayInverted.InvokeAsync(GetBoolean(changeEventArgs));

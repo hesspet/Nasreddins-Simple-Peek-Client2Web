@@ -64,7 +64,7 @@
         </button>
         <label class="zoom-control">
             <span>@GermanText.Zoom @CameraZoomText</span>
-            <input type="range" min="0" max="@AppConstants.MaximumCameraZoom" step="0.01" value="@State.CameraZoom" @onchange="ChangeZoom" />
+            <input type="range" min="0" max="@MaximumCameraZoomValue" step="0.01" value="@CameraZoomValue" @onchange="ChangeZoom" />
         </label>
     </div>
 </section>
@@ -90,6 +90,8 @@
 
     private bool ControlsAreDisabled => !State.IsConnected && !State.IsTestModeEnabled;
     private string CameraZoomText => $"{Math.Round(State.CameraZoom * 100)} %";
+    private static string MaximumCameraZoomValue => AppConstants.MaximumCameraZoom.ToString(CultureInfo.InvariantCulture);
+    private string CameraZoomValue => State.CameraZoom.ToString(CultureInfo.InvariantCulture);
     private string CameraStyleClass => State.SelectedCameraViewStyle switch
     {
         CameraViewStyle.Ios => "camera-ios",
