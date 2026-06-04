@@ -75,6 +75,7 @@ p {
 }
 
 .header-top-row {
+    align-items: flex-start;
     gap: 12px;
 }
 
@@ -275,6 +276,10 @@ p {
 .range-control input {
     width: 100%;
     accent-color: #0e4f56;
+}
+
+.stepper-row {
+    gap: 8px;
 }
 
 .settings-group {

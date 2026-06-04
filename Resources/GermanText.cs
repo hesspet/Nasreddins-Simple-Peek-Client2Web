@@ -43,7 +43,7 @@ public static class GermanText
     public const string DisplayRotated = "Displayanzeige drehen";
     public const string SkipSleepDisplayAfterClearDisplay = "Kein SLEEP-DISPLAY bei Anzeige löschen";
     public const string SleepDuration = "Schlafdauer";
-    public const string ListenDuration = "Listenzeit";
+    public const string ListenDuration = "Aktivzeit";
     public const string SendSleepCommand = "Gerät schlafen legen";
     public const string CameraView = "Kameraansicht";
     public const string CameraControls = "Kamera-Bedienung";
