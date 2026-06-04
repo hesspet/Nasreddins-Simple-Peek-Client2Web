@@ -49,7 +49,6 @@ public static class GermanText
     public const string CameraControls = "Kamera-Bedienung";
     public const string Opacity = "Deckkraft";
     public const string Normal = "Normal";
-    public const string Transparent = "Durchsichtig";
     public const string Minimal = "Unauffällig";
     public const string Custom = "Anpassbar";
     public const string Back = "Zurück";
@@ -127,7 +126,6 @@ public static class GermanText
         cameraButtonAppearance switch
         {
             CameraButtonAppearance.Normal => Normal,
-            CameraButtonAppearance.Transparent => Transparent,
             CameraButtonAppearance.Minimal => Minimal,
             CameraButtonAppearance.Custom => Custom,
             _ => Normal

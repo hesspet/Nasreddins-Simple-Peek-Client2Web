@@ -47,10 +47,9 @@ public enum CameraViewStyle
 
 public enum CameraButtonAppearance
 {
-    Normal,
-    Transparent,
-    Minimal,
-    Custom
+    Normal = 0,
+    Minimal = 2,
+    Custom = 3
 }
 
 public sealed record DirectionCommand(string Label, string Arrow, string Command);
@@ -164,6 +163,13 @@ public static class AppConstants
         ModeLabel.Text,
         ModeLabel.Esp,
         ModeLabel.Wuerfel
+    ];
+
+    public static readonly IReadOnlyList<CameraButtonAppearance> CameraButtonAppearances =
+    [
+        CameraButtonAppearance.Normal,
+        CameraButtonAppearance.Minimal,
+        CameraButtonAppearance.Custom
     ];
 
     public static readonly IReadOnlyList<DirectionCommand> DirectionCommands =

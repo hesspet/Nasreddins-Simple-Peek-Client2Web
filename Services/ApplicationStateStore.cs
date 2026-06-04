@@ -44,7 +44,7 @@ public sealed class ApplicationStateStore
             IsDisplayInverted = settings.IsDisplayInverted,
             IsDisplayRotated = settings.IsDisplayRotated,
             RememberedBluetoothDevice = settings.RememberedBluetoothDevice,
-            SelectedCameraButtonAppearance = settings.SelectedCameraButtonAppearance,
+            SelectedCameraButtonAppearance = NormalizeCameraButtonAppearance(settings.SelectedCameraButtonAppearance),
             SelectedCameraViewStyle = settings.SelectedCameraViewStyle,
             ShouldCloseButtonViewAfterSend = settings.ShouldCloseButtonViewAfterSend,
             ShouldSkipSleepDisplayAfterClearDisplay = settings.ShouldSkipSleepDisplayAfterClearDisplay
@@ -102,11 +102,15 @@ public sealed class ApplicationStateStore
         selectedCameraButtonAppearance switch
         {
             CameraButtonAppearance.Normal => 1,
-            CameraButtonAppearance.Transparent => 0.72,
             CameraButtonAppearance.Minimal => 0.28,
             CameraButtonAppearance.Custom => ClampCameraButtonOpacity(customCameraButtonOpacity),
             _ => 1
         };
+
+    public static CameraButtonAppearance NormalizeCameraButtonAppearance(CameraButtonAppearance cameraButtonAppearance) =>
+        AppConstants.CameraButtonAppearances.Contains(cameraButtonAppearance)
+            ? cameraButtonAppearance
+            : CameraButtonAppearance.Normal;
 
     public static string GetDeviceDisplayName(BluetoothDeviceInformation bluetoothDevice)
     {

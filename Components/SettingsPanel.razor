@@ -61,7 +61,7 @@
     <div class="settings-group">
         <h3>@GermanText.CameraControls</h3>
         <div class="segmented-options">
-            @foreach (var cameraButtonAppearance in Enum.GetValues<CameraButtonAppearance>())
+            @foreach (var cameraButtonAppearance in AppConstants.CameraButtonAppearances)
             {
                 <button class="mode-tab @(State.SelectedCameraButtonAppearance == cameraButtonAppearance ? "is-active" : "")"
                         @onclick="@(() => OnSetCameraButtonAppearance.InvokeAsync(cameraButtonAppearance))">

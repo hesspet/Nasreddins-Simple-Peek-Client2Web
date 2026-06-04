@@ -292,7 +292,10 @@ else
         await UpdateStateAndSaveAsync(currentState => currentState with { SelectedCameraViewStyle = cameraViewStyle });
 
     private async Task SetCameraButtonAppearance(CameraButtonAppearance cameraButtonAppearance) =>
-        await UpdateStateAndSaveAsync(currentState => currentState with { SelectedCameraButtonAppearance = cameraButtonAppearance });
+        await UpdateStateAndSaveAsync(currentState => currentState with
+        {
+            SelectedCameraButtonAppearance = ApplicationStateStore.NormalizeCameraButtonAppearance(cameraButtonAppearance)
+        });
 
     private async Task SetCameraButtonOpacity(double opacity) =>
         await UpdateStateAndSaveAsync(currentState => currentState with { CustomCameraButtonOpacity = ApplicationStateStore.ClampCameraButtonOpacity(opacity) });
