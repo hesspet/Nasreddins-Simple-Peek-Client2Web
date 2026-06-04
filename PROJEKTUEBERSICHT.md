@@ -85,6 +85,8 @@ dotnet publish NasreddinsSimplePeekClient2Web.csproj -c Release -o publish
 
 Danach wird der Blazor-`base href` auf den Repository-Pfad gesetzt, `index.html` als `404.html` für SPA-Fallback kopiert und `.nojekyll` im Publish-Root angelegt. GitHub Pages muss in den Repository-Einstellungen auf `GitHub Actions` als Quelle gestellt werden.
 
+Der Workflow verwendet Node-24-kompatible Action-Versionen (`actions/checkout@v6`, `actions/setup-dotnet@v5`, `actions/configure-pages@v6`, `actions/upload-pages-artifact@v5`, `actions/deploy-pages@v5`). Ein `Get Pages site failed`/`Not Found` bei `actions/configure-pages` weist darauf hin, dass GitHub Pages im Repository noch nicht aktiviert oder nicht auf `GitHub Actions` als Quelle gestellt ist.
+
 Das Repository wird nach Plan `Nasreddins-Simple-Peek-Client2Web` heißen. Falls der GitHub-Repositoryname abweicht, setzt der Workflow den Base-HREF dynamisch aus `GITHUB_REPOSITORY`.
 
 ## Lokale Befehle

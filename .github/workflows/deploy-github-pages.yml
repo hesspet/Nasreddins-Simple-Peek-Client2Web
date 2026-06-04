@@ -21,15 +21,15 @@ jobs:
 
     steps:
       - name: Repository auschecken
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: .NET einrichten
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 9.0.x
 
       - name: Pages einrichten
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Veröffentlichen
         run: dotnet publish NasreddinsSimplePeekClient2Web.csproj -c Release -o publish
@@ -46,7 +46,7 @@ jobs:
           touch "${publish_root}/.nojekyll"
 
       - name: Pages-Artefakt hochladen
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: publish/wwwroot
 
@@ -60,4 +60,4 @@ jobs:
     steps:
       - name: Zu GitHub Pages deployen
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
