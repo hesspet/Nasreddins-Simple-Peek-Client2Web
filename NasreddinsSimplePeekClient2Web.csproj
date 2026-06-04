@@ -5,7 +5,26 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+    <BuildTimestampUtc Condition="'$(BuildTimestampUtc)' == ''">$([System.DateTime]::UtcNow.ToString("O"))</BuildTimestampUtc>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(IntermediateOutputPath)GeneratedBuildInformation.cs" Visible="false" />
+  </ItemGroup>
+
+  <Target Name="GenerateBuildInformation" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <GeneratedBuildInformationLine Include="namespace NasreddinsSimplePeekClient2Web.Services%3B" />
+      <GeneratedBuildInformationLine Include="public static class GeneratedBuildInformation" />
+      <GeneratedBuildInformationLine Include="{" />
+      <GeneratedBuildInformationLine Include="    public const string BuildTimestampUtc = &quot;$(BuildTimestampUtc)&quot;%3B" />
+      <GeneratedBuildInformationLine Include="}" />
+    </ItemGroup>
+    <WriteLinesToFile
+      File="$(IntermediateOutputPath)GeneratedBuildInformation.cs"
+      Lines="@(GeneratedBuildInformationLine)"
+      Overwrite="true" />
+  </Target>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.7" />

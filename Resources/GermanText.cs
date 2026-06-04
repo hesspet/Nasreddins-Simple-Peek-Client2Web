@@ -12,6 +12,8 @@ public static class GermanText
     public const string Menu = "Menü";
     public const string OpenMenu = "Menü öffnen";
     public const string CloseMenu = "Menü schließen";
+    public const string ApplicationKind = "PWA";
+    public const string Build = "Build";
     public const string Client = "Peeker (Videofake)";
     public const string Settings = "Einstellungen";
     public const string Log = "Log";
@@ -76,6 +78,8 @@ public static class GermanText
     public const string SymbolMissing = "Symbol fehlt.";
     public const string SetupHint = "GitHub Pages liefert die PWA über HTTPS aus. Für BLE muss die Geräteauswahl direkt durch Antippen gestartet werden.";
     public const string ReconnectHint = "Web Bluetooth erlaubt Auto-Reconnect nur für Geräte, die dieser Webseite bereits freigegeben wurden.";
+
+    public static string GetMetadataLine(string buildTimestamp) => $"{ApplicationKind} · {Build} {buildTimestamp}";
 
     public static string GetMenuLabel(MenuItem menuItem) => menuItem switch
     {

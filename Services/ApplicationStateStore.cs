@@ -81,6 +81,8 @@ public sealed class ApplicationStateStore
 
     public static string FormatEuropeanDate(DateTimeOffset date) => date.ToString("dd.MM.yyyy", GermanCulture);
 
+    public static string FormatEuropeanDateTime(DateTimeOffset date) => date.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss", GermanCulture);
+
     public static string FormatRecordingDuration(int totalSeconds)
     {
         var minutes = totalSeconds / 60;

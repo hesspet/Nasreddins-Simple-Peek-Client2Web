@@ -1,5 +1,6 @@
 @page "/"
 @implements IDisposable
+@using System.Globalization
 @inject ApplicationStateStore StateStore
 @inject SettingsStorage SettingsStorage
 @inject BluetoothPrompterClient BluetoothPrompterClient
@@ -117,7 +118,8 @@ else
     private Timer? recordingTimer;
     private ApplicationState State => StateStore.State;
     private string PageClass => State.IsDarkModeEnabled ? "app-root dark-theme" : "app-root";
-    private string MetadataLine => $"PWA · Build {ApplicationStateStore.FormatEuropeanDate(DateTimeOffset.Now)} · GitHub Pages bereit";
+    private string MetadataLine => GermanText.GetMetadataLine(BuildTimestampText);
+    private static string BuildTimestampText { get; } = GetBuildTimestampText();
 
     protected override async Task OnInitializedAsync()
     {
@@ -130,6 +132,16 @@ else
         }
 
         haveSettingsLoaded = true;
+    }
+
+    private static string GetBuildTimestampText()
+    {
+        if (DateTimeOffset.TryParse(GeneratedBuildInformation.BuildTimestampUtc, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsedBuildTimestamp))
+        {
+            return ApplicationStateStore.FormatEuropeanDateTime(parsedBuildTimestamp);
+        }
+
+        return ApplicationStateStore.FormatEuropeanDateTime(DateTimeOffset.Now);
     }
 
     private void HandleStateChanged()
