@@ -63,10 +63,20 @@ else if (SelectedMode == ModeLabel.Esp)
 }
 else if (SelectedMode == ModeLabel.Wuerfel)
 {
-    <div class="symbol-grid">
+    <div class="cube-grid">
         @foreach (var cubeCommand in AppConstants.CubeCommands)
         {
-            <CommandButton CommandText="@cubeCommand.Command" Disabled="ControlsAreDisabled" Icon="@cubeCommand.Symbol" Label="@cubeCommand.Label" OnSendCommand="OnSendCommand" />
+            <button class="cube-button"
+                    disabled="@ControlsAreDisabled"
+                    @onclick="@(() => OnSendCommand.InvokeAsync(cubeCommand.Command))">
+                <span class="cube-dice-face is-value-@cubeCommand.Label" aria-hidden="true">
+                    @foreach (var eyePosition in Enumerable.Range(1, 9))
+                    {
+                        <span class="cube-eye"></span>
+                    }
+                </span>
+                <span>@cubeCommand.Label</span>
+            </button>
         }
     </div>
 }

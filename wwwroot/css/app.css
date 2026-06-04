@@ -645,6 +645,86 @@ p {
     grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
 }
 
+.cube-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+    gap: 8px;
+}
+
+.cube-button {
+    display: grid;
+    place-items: center;
+    gap: 8px;
+    min-height: 92px;
+    padding: 10px 13px;
+    border: 0;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #183033;
+    font-weight: 700;
+    touch-action: manipulation;
+}
+
+.cube-button:hover:not(:disabled) {
+    background: #f2f8f6;
+}
+
+.cube-button:disabled {
+    opacity: 0.45;
+}
+
+.dark-theme .cube-button {
+    background: #223032;
+    color: #edf6f2;
+}
+
+.dark-theme .cube-button:hover:not(:disabled) {
+    background: #2a3a3c;
+}
+
+.cube-dice-face {
+    display: grid;
+    grid-template-columns: repeat(3, 18px);
+    grid-template-rows: repeat(3, 18px);
+    gap: 2px;
+    place-content: center;
+    width: 58px;
+    height: 58px;
+}
+
+.cube-eye {
+    width: 14px;
+    height: 14px;
+    place-self: center;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0;
+}
+
+.cube-dice-face.is-value-1 .cube-eye:nth-child(5),
+.cube-dice-face.is-value-2 .cube-eye:nth-child(1),
+.cube-dice-face.is-value-2 .cube-eye:nth-child(9),
+.cube-dice-face.is-value-3 .cube-eye:nth-child(1),
+.cube-dice-face.is-value-3 .cube-eye:nth-child(5),
+.cube-dice-face.is-value-3 .cube-eye:nth-child(9),
+.cube-dice-face.is-value-4 .cube-eye:nth-child(1),
+.cube-dice-face.is-value-4 .cube-eye:nth-child(3),
+.cube-dice-face.is-value-4 .cube-eye:nth-child(7),
+.cube-dice-face.is-value-4 .cube-eye:nth-child(9),
+.cube-dice-face.is-value-5 .cube-eye:nth-child(1),
+.cube-dice-face.is-value-5 .cube-eye:nth-child(3),
+.cube-dice-face.is-value-5 .cube-eye:nth-child(5),
+.cube-dice-face.is-value-5 .cube-eye:nth-child(7),
+.cube-dice-face.is-value-5 .cube-eye:nth-child(9),
+.cube-dice-face.is-value-6 .cube-eye:nth-child(1),
+.cube-dice-face.is-value-6 .cube-eye:nth-child(3),
+.cube-dice-face.is-value-6 .cube-eye:nth-child(4),
+.cube-dice-face.is-value-6 .cube-eye:nth-child(6),
+.cube-dice-face.is-value-6 .cube-eye:nth-child(7),
+.cube-dice-face.is-value-6 .cube-eye:nth-child(9) {
+    opacity: 1;
+}
+
 .suit-button {
     display: grid;
     place-items: center;
