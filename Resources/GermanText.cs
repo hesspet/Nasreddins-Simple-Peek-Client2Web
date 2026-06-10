@@ -30,7 +30,11 @@ public static class GermanText
     public const string Connect = "Bluetooth-Gerät auswählen";
     public const string ConnectAgain = "Letztes Gerät erneut verbinden";
     public const string Disconnect = "Trennen";
+    public const string DisconnectConnection = "Verbindung trennen";
+    public const string DisconnectConnectionQuestion = "Möchtest du die aktuelle Verbindung zum BlePrompter wirklich trennen?";
+    public const string ConfirmDisconnect = "Verbindung trennen";
     public const string CancelConnection = "Verbindung abbrechen";
+    public const string Cancel = "Abbrechen";
     public const string CancelSearch = "Suche abbrechen";
     public const string SearchSleepingDevice = "Schlafendes Gerät suchen";
     public const string ClearDisplay = "Anzeige löschen";

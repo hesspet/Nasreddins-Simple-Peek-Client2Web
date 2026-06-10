@@ -222,6 +222,21 @@ p {
     flex-wrap: nowrap;
 }
 
+.client-panel .toolbar {
+    justify-items: stretch;
+}
+
+.peeker-action-control,
+.peeker-action-button,
+.client-panel .toolbar-action-row {
+    width: 100%;
+    max-width: 420px;
+}
+
+.peeker-action-control > .button {
+    flex: 1;
+}
+
 .settings-heading-with-help {
     justify-content: space-between;
 }

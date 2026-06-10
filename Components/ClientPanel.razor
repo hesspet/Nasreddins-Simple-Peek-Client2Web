@@ -1,8 +1,8 @@
-<section class="panel">
+<section class="panel client-panel">
     <div class="toolbar">
         @if (!State.IsConnected && !State.IsTestModeEnabled)
         {
-            <div class="control-with-help">
+            <div class="control-with-help peeker-action-control">
                 <button class="button primary-button" disabled="@State.IsBluetoothOperationRunning" @onclick="PrimaryConnect">
                     @PrimaryConnectText
                 </button>
@@ -10,7 +10,7 @@
             </div>
             @if (State.RememberedBluetoothDevice is not null)
             {
-                <div class="control-with-help">
+                <div class="control-with-help peeker-action-control">
                     <button class="button" disabled="@State.IsBluetoothOperationRunning" @onclick="OnConnect">
                         @GermanText.Connect
                     </button>
@@ -21,13 +21,13 @@
 
         @if (State.IsBluetoothOperationRunning)
         {
-            <button class="button primary-button" @onclick="OnCancelBluetoothOperation">
+            <button class="button primary-button peeker-action-button" @onclick="OnCancelBluetoothOperation">
                 @(State.ConnectionStatus == ConnectionStatus.Connecting ? GermanText.CancelConnection : GermanText.CancelSearch)
             </button>
         }
 
         <div class="toolbar-action-row">
-            <div class="control-with-help">
+            <div class="control-with-help peeker-action-control">
                 <button class="button" disabled="@ControlsAreDisabled" @onclick="OnClearDisplay">
                     <span aria-hidden="true">⌫</span> @GermanText.ClearDisplay
                 </button>
