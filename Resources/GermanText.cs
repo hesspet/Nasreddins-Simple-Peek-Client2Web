@@ -64,6 +64,8 @@ public static class GermanText
     public const string FilteredScan = "Gefiltert nach BlePrompter und Nordic UART.";
     public const string ForgetRememberedDevice = "Letztes bekanntes Gerät vergessen";
     public const string FoundDevices = "Gefundene Geräte";
+    public const string Fullscreen = "Vollbild";
+    public const string FullscreenTitle = "Vollbildmodus aktivieren";
     public const string Help = "Hilfe";
     public const string HelpOverview = "Hilfeübersicht";
     public const string HelpSystemHidden = "Hilfesystem ausblenden";

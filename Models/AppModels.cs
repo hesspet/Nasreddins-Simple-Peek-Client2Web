@@ -1,3 +1,5 @@
+using NasreddinsSimplePeekClient2Web.Resources;
+
 namespace NasreddinsSimplePeekClient2Web.Models;
 
 public enum MenuItem
@@ -232,14 +234,14 @@ public static class AppConstants
 
     public static readonly IReadOnlyList<DirectionCommand> DirectionCommands =
     [
-        new("NW", "↖", "ANW"),
-        new("N", "↑", "AN"),
-        new("NO", "↗", "ANE"),
-        new("W", "←", "AW"),
-        new("O", "→", "AE"),
-        new("SW", "↙", "ASW"),
-        new("S", "↓", "AS"),
-        new("SO", "↘", "ASE")
+        new("NW", IconSvg.ArrowNorthWest, "ANW"),
+        new("N",  IconSvg.ArrowNorth,     "AN"),
+        new("NO", IconSvg.ArrowNorthEast, "ANE"),
+        new("W",  IconSvg.ArrowWest,      "AW"),
+        new("O",  IconSvg.ArrowEast,      "AE"),
+        new("SW", IconSvg.ArrowSouthWest, "ASW"),
+        new("S",  IconSvg.ArrowSouth,     "AS"),
+        new("SO", IconSvg.ArrowSouthEast, "ASE")
     ];
 
     public static readonly IReadOnlyList<SuitOption> SuitOptions =

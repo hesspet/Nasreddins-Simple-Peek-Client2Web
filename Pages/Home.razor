@@ -5,6 +5,7 @@
 @inject SettingsStorage SettingsStorage
 @inject BluetoothPrompterClient BluetoothPrompterClient
 @inject CommandService CommandService
+@inject FullscreenService FullscreenService
 
 <PageTitle>@GermanText.ApplicationTitle</PageTitle>
 
@@ -70,6 +71,18 @@ else
                         </div>
                         <p class="metadata-line">@MetadataLine</p>
                     </div>
+                    <button class="icon-button"
+                            type="button"
+                            aria-label="@GermanText.FullscreenTitle"
+                            title="@GermanText.FullscreenTitle"
+                            @onclick="TryFullscreen">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="15 3 21 3 21 9" />
+                            <polyline points="9 21 3 21 3 15" />
+                            <line x1="21" y1="3" x2="14" y2="10" />
+                            <line x1="3" y1="21" x2="10" y2="14" />
+                        </svg>
+                    </button>
                     <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@CurrentViewHelpIdentifier" Title="@CurrentViewHelpTitle" OnOpenHelp="OpenHelp" />
                 </div>
                 <div class="header-status-row">
@@ -208,6 +221,16 @@ else
     private void OpenMenu() => UpdateState(currentState => currentState with { IsMenuOpen = true });
 
     private void CloseMenu() => UpdateState(currentState => currentState with { IsMenuOpen = false });
+
+    private async Task TryFullscreen()
+    {
+        var wurdeAktiviert = await FullscreenService.TryFullscreenAsync();
+
+        if (!wurdeAktiviert)
+        {
+            UpdateState(currentState => currentState with { LastResponse = "Vollbildmodus wird von diesem Browser nicht unterstützt." });
+        }
+    }
 
     private void OpenHelp(string helpIdentifier)
     {

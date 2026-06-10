@@ -14,5 +14,6 @@ builder.Services.AddScoped<BluetoothPrompterClient>();
 builder.Services.AddScoped<CommandService>();
 builder.Services.AddScoped<HelpContentService>();
 builder.Services.AddScoped<VideoCameraService>();
+builder.Services.AddScoped<FullscreenService>();
 
 await builder.Build().RunAsync();

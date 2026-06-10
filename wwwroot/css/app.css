@@ -12,8 +12,18 @@
 html,
 body,
 #app {
-    min-height: 100%;
+    width: 100%;
+    min-height: 100dvh;
     margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
 }
 
 button,
@@ -37,7 +47,7 @@ p {
 }
 
 .app-root {
-    min-height: 100vh;
+    min-height: 100dvh;
     background:
         linear-gradient(180deg, rgba(14, 79, 86, 0.08), rgba(244, 240, 231, 0) 220px),
         #f4f0e7;
@@ -566,7 +576,7 @@ p {
     position: relative;
     z-index: 1;
     width: min(760px, 100%);
-    max-height: min(82vh, 720px);
+    max-height: min(82dvh, 720px);
     margin: 0 auto;
     overflow: auto;
     border: 1px solid rgba(14, 79, 86, 0.16);
@@ -940,8 +950,18 @@ p {
 }
 
 .command-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6rem;
+    height: 1.6rem;
     font-size: 1.6rem;
     line-height: 1;
+}
+
+.command-icon svg {
+    width: 100%;
+    height: 100%;
 }
 
 .card-control-panel,
@@ -1129,7 +1149,7 @@ p {
     display: block;
     width: 8rem;
     height: 8rem;
-    margin: 20vh auto 1rem auto;
+    margin: 20dvh auto 1rem auto;
 }
 
 .loading-progress circle {
@@ -1150,7 +1170,7 @@ p {
     position: absolute;
     text-align: center;
     font-weight: 800;
-    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+    inset: calc(20dvh + 3.25rem) 0 auto 0.2rem;
 }
 
 .loading-progress-text::after {

@@ -1,7 +1,7 @@
 <button class="camera-command-button" disabled="@Disabled" @onclick="@(() => OnSendCommand.InvokeAsync(CommandText))">
     @if (!string.IsNullOrWhiteSpace(Icon))
     {
-        <span class="command-icon">@Icon</span>
+        <span class="command-icon">@((MarkupString)Icon)</span>
     }
     <span>@Label</span>
 </button>
