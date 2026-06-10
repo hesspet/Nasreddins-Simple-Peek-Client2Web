@@ -350,7 +350,14 @@ p {
 
 .cycle-setting-row {
     display: grid;
-    grid-template-columns: minmax(90px, 1fr) auto auto;
+    grid-template-columns: minmax(90px, 1fr) auto;
+}
+
+.cycle-setting-heading {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
 }
 
 .stepper-row {
@@ -1121,14 +1128,14 @@ p {
         padding-inline: 12px;
     }
 
-    .status-line,
-    .cycle-setting-row {
+    .status-line {
         grid-template-columns: 1fr;
         align-items: start;
     }
 
     .cycle-setting-row {
-        display: grid;
+        grid-template-columns: 1fr;
+        justify-items: start;
     }
 
     .camera-hud {
