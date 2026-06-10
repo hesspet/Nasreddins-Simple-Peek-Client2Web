@@ -52,6 +52,12 @@ public enum CameraButtonAppearance
     Custom = 3
 }
 
+public enum VideoSourceType
+{
+    LiveCamera,
+    TestVideo
+}
+
 public sealed record DirectionCommand(string Label, string Arrow, string Command);
 
 public sealed record SuitOption(string Label, string Mark, string Code, bool IsRed);
@@ -59,6 +65,8 @@ public sealed record SuitOption(string Label, string Mark, string Code, bool IsR
 public sealed record RankOption(string Label, string Code);
 
 public sealed record SymbolCommand(string Label, string Command, string Symbol);
+
+public sealed record TestVideoFileSelection(string FileName, bool IsRegistered, string ErrorText = "");
 
 public sealed record HelpTopic
 {
@@ -97,6 +105,7 @@ public sealed record PersistedApplicationSettings
     public bool ShouldSkipSleepDisplayAfterClearDisplay { get; init; }
     public CameraViewStyle SelectedCameraViewStyle { get; init; } = CameraViewStyle.Android;
     public CameraButtonAppearance SelectedCameraButtonAppearance { get; init; } = CameraButtonAppearance.Normal;
+    public VideoSourceType SelectedVideoSourceType { get; init; } = VideoSourceType.LiveCamera;
     public double CustomCameraButtonOpacity { get; init; } = 0.18;
     public int CycleSleepSeconds { get; init; } = AppConstants.DefaultCycleSleepSeconds;
     public int CycleListenSeconds { get; init; } = AppConstants.DefaultCycleListenSeconds;
@@ -113,6 +122,7 @@ public sealed record ApplicationState
     public bool ShouldSkipSleepDisplayAfterClearDisplay { get; init; }
     public CameraViewStyle SelectedCameraViewStyle { get; init; } = CameraViewStyle.Android;
     public CameraButtonAppearance SelectedCameraButtonAppearance { get; init; } = CameraButtonAppearance.Normal;
+    public VideoSourceType SelectedVideoSourceType { get; init; } = VideoSourceType.LiveCamera;
     public double CustomCameraButtonOpacity { get; init; } = 0.18;
     public ConnectionStatus ConnectionStatus { get; init; } = ConnectionStatus.NotConnected;
     public bool IsConnected { get; init; }
@@ -127,6 +137,9 @@ public sealed record ApplicationState
     public int RecordingElapsedSeconds { get; init; }
     public double CameraZoom { get; init; }
     public bool IsFakeVideoPaused { get; init; }
+    public string SelectedTestVideoFileName { get; init; } = "";
+    public bool IsTestVideoFileRegistered { get; init; }
+    public string TestVideoSelectionErrorText { get; init; } = "";
     public string SelectedSuitCode { get; init; } = "H";
     public bool WasCardSuitButtonPressed { get; init; }
     public string SymbolText { get; init; } = "";
@@ -165,6 +178,7 @@ public static class AppConstants
     public const string CycleSleepDurationHelpIdentifier = "element-cycle-sleep-duration";
     public const string CycleListenDurationHelpIdentifier = "element-cycle-listen-duration";
     public const string CameraViewHelpIdentifier = "element-camera-view";
+    public const string VideoSourceHelpIdentifier = "element-video-source";
     public const string CameraControlsHelpIdentifier = "element-camera-controls";
     public const string CameraButtonOpacityHelpIdentifier = "element-camera-button-opacity";
     public const string ForgetRememberedDeviceHelpIdentifier = "element-forget-remembered-device";
@@ -208,6 +222,12 @@ public static class AppConstants
         CameraButtonAppearance.Normal,
         CameraButtonAppearance.Minimal,
         CameraButtonAppearance.Custom
+    ];
+
+    public static readonly IReadOnlyList<VideoSourceType> VideoSourceTypes =
+    [
+        VideoSourceType.LiveCamera,
+        VideoSourceType.TestVideo
     ];
 
     public static readonly IReadOnlyList<DirectionCommand> DirectionCommands =

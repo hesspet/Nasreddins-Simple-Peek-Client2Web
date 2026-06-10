@@ -105,6 +105,8 @@ else
                     OnSetCameraButtonAppearance="SetCameraButtonAppearance"
                     OnSetCameraButtonOpacity="SetCameraButtonOpacity"
                     OnSetCameraViewStyle="SetCameraViewStyle"
+                    OnSetTestVideoFileSelection="SetTestVideoFileSelection"
+                    OnSetVideoSourceType="SetVideoSourceType"
                     OnSetCycleListenSeconds="SetCycleListenSeconds"
                     OnSetCycleSleepSeconds="SetCycleSleepSeconds"
                     OnSetDarkMode="SetDarkMode"
@@ -339,6 +341,29 @@ else
 
     private async Task SetCameraViewStyle(CameraViewStyle cameraViewStyle) =>
         await UpdateStateAndSaveAsync(currentState => currentState with { SelectedCameraViewStyle = cameraViewStyle });
+
+    private async Task SetVideoSourceType(VideoSourceType videoSourceType) =>
+        await UpdateStateAndSaveAsync(currentState => currentState with
+        {
+            SelectedVideoSourceType = ApplicationStateStore.NormalizeVideoSourceType(videoSourceType),
+            IsFakeVideoPaused = false
+        });
+
+    private async Task SetTestVideoFileSelection(TestVideoFileSelection testVideoFileSelection)
+    {
+        StateStore.Update(currentState => currentState with
+        {
+            SelectedVideoSourceType = testVideoFileSelection.IsRegistered
+                ? VideoSourceType.TestVideo
+                : currentState.SelectedVideoSourceType,
+            SelectedTestVideoFileName = testVideoFileSelection.FileName,
+            IsTestVideoFileRegistered = testVideoFileSelection.IsRegistered,
+            TestVideoSelectionErrorText = testVideoFileSelection.ErrorText,
+            IsFakeVideoPaused = false
+        });
+
+        await SaveSettingsAsync();
+    }
 
     private async Task SetCameraButtonAppearance(CameraButtonAppearance cameraButtonAppearance) =>
         await UpdateStateAndSaveAsync(currentState => currentState with

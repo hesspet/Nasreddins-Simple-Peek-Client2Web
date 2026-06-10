@@ -1,6 +1,6 @@
 # Projektübersicht: Nasreddins Simple Peek Client 2 Web
 
-Stand: 04.06.2026
+Stand: 10.06.2026
 
 ## Zweck
 
@@ -25,7 +25,7 @@ Dieses Projekt ist die Blazor-WebAssembly-PWA-Portierung von `C:\dev\Nasreddins-
 - `Services/CommandService.cs`: Sendelogik für `CL`, `SLEEP DISPLAY`, Karten, Pfeile, Text, ESP, Würfel und Schlafzyklus.
 - `Services/SettingsStorage.cs`: Persistenz über `localStorage`.
 - `Services/HelpContentService.cs`: Lädt den Hilfeindex und die Markdown-Hilfetexte aus `wwwroot/help/de`.
-- `Services/VideoCameraService.cs`: C#-Fassade für Kamera-/Zoom-Interop.
+- `Services/VideoCameraService.cs`: C#-Fassade für Kamera-, Testvideo- und Zoom-Interop.
 - `Components/*.razor`: UI-Komponenten für Client, Einstellungen, Log, About, Command-Controls, Hilfe und Kamera-Vollbild.
 - `Resources/GermanText.cs`: Zentraler deutscher Textkatalog für sichtbare UI-Texte.
 - `Resources/Strings.resx`: Platzhalter-/Basis-Ressourcendatei für spätere echte Ressourcenlokalisierung.
@@ -41,7 +41,7 @@ Dieses Projekt ist die Blazor-WebAssembly-PWA-Portierung von `C:\dev\Nasreddins-
 - Hauptsprache: C#.
 - Browsernahe APIs:
   - `wwwroot/js/webBluetooth.js` kapselt `navigator.bluetooth`.
-  - `wwwroot/js/videoCamera.js` kapselt `navigator.mediaDevices.getUserMedia`.
+  - `wwwroot/js/videoCamera.js` kapselt `navigator.mediaDevices.getUserMedia`, MP4-Testvideo-Dateiauswahl und Video-Zoom.
 - Zustand:
   - `ApplicationStateStore` hält den reaktiven App-Zustand.
   - Komponenten rendern nach `StateChanged` neu.
@@ -71,13 +71,17 @@ Dieses Projekt ist die Blazor-WebAssembly-PWA-Portierung von `C:\dev\Nasreddins-
 - `Anzeige löschen` sendet `CL` und optional `SLEEP DISPLAY`.
 - Displayoptionen senden bei aktiver Verbindung `I0/I1` und `U0/U1`.
 - Zyklischer Schlaf sendet `SLEEP CYCLE <Schlafdauer> <Listenzeit>`.
-- Kamera-Vollbildansicht mit Livevideo, REC-Anzeige, optischer Pause, Zoom und ausblendbaren Overlay-Bedienelementen.
+- Kamera-Vollbildansicht mit Livevideo oder sitzungsweise ausgewähltem MP4-Testvideo, REC-Anzeige, Pause, Zoom und ausblendbaren Overlay-Bedienelementen.
+- In den Einstellungen kann als Videoquelle `Livekamera` oder `Testvideo` gewählt werden. Testvideos müssen MP4-Dateien sein, werden per Browser-Dateiauswahl nur für die aktuelle App-Sitzung registriert und nicht in das GitHub-Pages-Deployment übernommen.
+- Testvideos werden immer per Zoom-to-Fill bildfüllend angezeigt; kleine Auflösungen werden hochskaliert und können im Testmodus unscharf wirken.
 
 ## Browsergrenzen
 
 Web Bluetooth funktioniert nur in sicheren Kontexten wie HTTPS oder `localhost` und benötigt eine direkte Benutzeraktion für die Geräteauswahl. Android Chrome unterstützt diesen Ablauf. iOS Safari und Chrome für iOS unterstützen Web Bluetooth nicht nativ; iOS-Zielbrowser ist deshalb Bluefy.
 
 Ein freier Hintergrundscan wie in `react-native-ble-plx` ist im Browser nicht verfügbar. Die App bildet die Suche über den Browser-Geräteauswahldialog ab. Die Funktion `Schlafendes Gerät suchen` ist deshalb ein browserkonformer Verbindungs-/Wake-Ablauf und kein nativer Hintergrundscan.
+
+Lokale Testvideos werden über die Browser-Dateiauswahl freigegeben. Browser erlauben keinen dauerhaften freien Zugriff auf beliebige lokale Verzeichnisse; nach einem Neuladen oder PWA-Neustart muss die MP4-Datei erneut ausgewählt werden.
 
 ## GitHub Pages
 

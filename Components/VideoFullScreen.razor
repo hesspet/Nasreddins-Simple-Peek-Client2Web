@@ -7,9 +7,12 @@
     @if (!CameraIsAvailable)
     {
         <div class="camera-fallback">
-            <h2>@GermanText.CameraAccessMissing</h2>
+            <h2>@FallbackTitle</h2>
             <p>@CameraErrorText</p>
-            <button class="button primary-button" @onclick="StartCamera">@GermanText.AllowCamera</button>
+            @if (State.SelectedVideoSourceType == VideoSourceType.LiveCamera)
+            {
+                <button class="button primary-button" @onclick="StartVideoSource">@GermanText.AllowCamera</button>
+            }
             <button class="button" @onclick="OnShowControls">@GermanText.ShowControls</button>
             <button class="button" @onclick="OnBack">@GermanText.Back</button>
         </div>
@@ -30,7 +33,7 @@
     <div class="camera-hud">
         <span class="recording-badge"><span class="recording-dot"></span> REC @ApplicationStateStore.FormatRecordingDuration(State.RecordingElapsedSeconds)</span>
         <button class="camera-title-button" @onclick="OnShowControls">@GermanText.GetModeLabel(State.FullScreenMode ?? State.SelectedMode)</button>
-        <span>@GermanText.GetCameraViewStyleLabel(State.SelectedCameraViewStyle)</span>
+        <span>@VideoSourceSummary</span>
     </div>
 
     @if (State.AreFullScreenControlsVisible)
@@ -60,7 +63,7 @@
     <div class="camera-bottom-hud">
         <button class="fake-pause-button"
                 aria-label="@(State.IsFakeVideoPaused ? GermanText.ContinueVideo : GermanText.PauseVideo)"
-                @onclick="@(() => OnSetFakeVideoPaused.InvokeAsync(!State.IsFakeVideoPaused))">
+                @onclick="TogglePause">
             @(State.IsFakeVideoPaused ? "▶" : "⏸")
         </button>
         <label class="zoom-control">
@@ -72,7 +75,7 @@
 
 @code {
     private const string VideoElementIdentifier = "ble-prompter-camera-preview";
-    private bool cameraStartWasRequested;
+    private bool videoStartWasRequested;
     private bool CameraIsAvailable { get; set; } = true;
     private string CameraErrorText { get; set; } = GermanText.AllowCameraAccess;
 
@@ -92,7 +95,13 @@
     [Parameter, EditorRequired] public EventCallback<double> OnSetZoom { get; set; }
 
     private bool ControlsAreDisabled => !State.IsConnected && !State.IsTestModeEnabled;
+    private string FallbackTitle => State.SelectedVideoSourceType == VideoSourceType.TestVideo
+        ? GermanText.TestVideoMissingTitle
+        : GermanText.CameraAccessMissing;
     private string CameraZoomText => $"{Math.Round(State.CameraZoom * 100)} %";
+    private string VideoSourceSummary => State.SelectedVideoSourceType == VideoSourceType.TestVideo
+        ? GermanText.TestVideo
+        : GermanText.GetCameraViewStyleLabel(State.SelectedCameraViewStyle);
     private static string MaximumCameraZoomValue => AppConstants.MaximumCameraZoom.ToString(CultureInfo.InvariantCulture);
     private string CameraZoomValue => State.CameraZoom.ToString(CultureInfo.InvariantCulture);
     private string CameraStyleClass => State.SelectedCameraViewStyle switch
@@ -110,16 +119,34 @@
     {
         if (firstRender)
         {
-            await StartCamera();
+            await StartVideoSource();
         }
     }
 
-    private async Task StartCamera()
+    private async Task StartVideoSource()
     {
-        cameraStartWasRequested = true;
+        videoStartWasRequested = false;
+
+        if (State.SelectedVideoSourceType == VideoSourceType.TestVideo && !State.IsTestVideoFileRegistered)
+        {
+            CameraIsAvailable = false;
+            CameraErrorText = GermanText.TestVideoMissing;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
         try
         {
-            await VideoCameraService.StartCameraAsync(VideoElementIdentifier, State.CameraZoom);
+            if (State.SelectedVideoSourceType == VideoSourceType.TestVideo)
+            {
+                await VideoCameraService.StartTestVideoAsync(VideoElementIdentifier, State.CameraZoom);
+            }
+            else
+            {
+                await VideoCameraService.StartCameraAsync(VideoElementIdentifier, State.CameraZoom);
+            }
+
+            videoStartWasRequested = true;
             CameraIsAvailable = true;
         }
         catch (Exception exception)
@@ -140,9 +167,20 @@
 
         await OnSetZoom.InvokeAsync(nextZoom);
 
-        if (cameraStartWasRequested)
+        if (videoStartWasRequested)
         {
             await VideoCameraService.SetZoomAsync(VideoElementIdentifier, nextZoom);
+        }
+    }
+
+    private async Task TogglePause()
+    {
+        var nextValue = !State.IsFakeVideoPaused;
+        await OnSetFakeVideoPaused.InvokeAsync(nextValue);
+
+        if (videoStartWasRequested && State.SelectedVideoSourceType == VideoSourceType.TestVideo)
+        {
+            await VideoCameraService.SetPausedAsync(VideoElementIdentifier, nextValue);
         }
     }
 

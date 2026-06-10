@@ -335,6 +335,40 @@ p {
     flex-direction: column;
 }
 
+.test-video-setting {
+    display: grid;
+    gap: 8px;
+}
+
+.test-video-setting p {
+    margin: 0;
+}
+
+.file-picker-button {
+    display: inline-grid;
+    place-items: center;
+    width: fit-content;
+}
+
+.visually-hidden-file-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.validation-message {
+    color: #b42318;
+    font-weight: 800;
+}
+
+.dark-theme .validation-message {
+    color: #ffb4aa;
+}
+
 .range-control-header {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;

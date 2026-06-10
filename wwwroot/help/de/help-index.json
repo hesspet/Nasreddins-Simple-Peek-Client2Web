@@ -147,6 +147,13 @@
     "file": "elements/kameraansicht.md"
   },
   {
+    "id": "element-video-source",
+    "title": "Videoquelle",
+    "scope": "element",
+    "context": "settings",
+    "file": "elements/videoquelle.md"
+  },
+  {
     "id": "element-camera-controls",
     "title": "Kamera-Bedienung",
     "scope": "element",

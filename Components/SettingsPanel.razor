@@ -1,3 +1,5 @@
+@inject VideoCameraService VideoCameraService
+
 <section class="panel settings-panel">
     <div class="toggle-control">
         <label class="setting-checkbox-label">
@@ -94,6 +96,47 @@
 
     <div class="settings-group">
         <div class="settings-heading-with-help">
+            <h3>@GermanText.VideoSource</h3>
+            <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.VideoSourceHelpIdentifier" Title="@GermanText.VideoSource" OnOpenHelp="OnOpenHelp" />
+        </div>
+        <div class="segmented-options">
+            @foreach (var videoSourceType in AppConstants.VideoSourceTypes)
+            {
+                <button class="mode-tab @(State.SelectedVideoSourceType == videoSourceType ? "is-active" : "")"
+                        @onclick="@(() => OnSetVideoSourceType.InvokeAsync(videoSourceType))">
+                    @GermanText.GetVideoSourceTypeLabel(videoSourceType)
+                </button>
+            }
+        </div>
+        @if (State.SelectedVideoSourceType == VideoSourceType.TestVideo)
+        {
+            <div class="test-video-setting">
+                <p class="muted-text">@GermanText.TestVideoMp4Hint</p>
+                <p class="muted-text">@GermanText.TestVideoZoomToFillHint</p>
+                <label class="button file-picker-button" for="@TestVideoFileInputIdentifier">@GermanText.SelectTestVideo</label>
+                <input id="@TestVideoFileInputIdentifier"
+                       class="visually-hidden-file-input"
+                       type="file"
+                       accept=".mp4,video/mp4"
+                       @onchange="SelectTestVideoFile" />
+                <div class="status-line">
+                    <span>@GermanText.SelectedTestVideo</span>
+                    <strong>@SelectedTestVideoFileText</strong>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(State.TestVideoSelectionErrorText))
+                {
+                    <p class="validation-message">@State.TestVideoSelectionErrorText</p>
+                }
+                @if (State.IsTestVideoFileRegistered)
+                {
+                    <button class="button" type="button" @onclick="RemoveTestVideoFile">@GermanText.RemoveTestVideo</button>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="settings-group">
+        <div class="settings-heading-with-help">
             <h3>@GermanText.CameraView</h3>
             <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.CameraViewHelpIdentifier" Title="@GermanText.CameraView" OnOpenHelp="OnOpenHelp" />
         </div>
@@ -180,6 +223,7 @@
 </section>
 
 @code {
+    private const string TestVideoFileInputIdentifier = "test-video-file-input";
     private bool isSleepResetConfirmationOpen;
     private bool isSleepResetCompletionOpen;
     private string disabledDeviceName = "";
@@ -190,6 +234,8 @@
     [Parameter, EditorRequired] public EventCallback<CameraButtonAppearance> OnSetCameraButtonAppearance { get; set; }
     [Parameter, EditorRequired] public EventCallback<double> OnSetCameraButtonOpacity { get; set; }
     [Parameter, EditorRequired] public EventCallback<CameraViewStyle> OnSetCameraViewStyle { get; set; }
+    [Parameter, EditorRequired] public EventCallback<TestVideoFileSelection> OnSetTestVideoFileSelection { get; set; }
+    [Parameter, EditorRequired] public EventCallback<VideoSourceType> OnSetVideoSourceType { get; set; }
     [Parameter, EditorRequired] public EventCallback<int> OnSetCycleListenSeconds { get; set; }
     [Parameter, EditorRequired] public EventCallback<int> OnSetCycleSleepSeconds { get; set; }
     [Parameter, EditorRequired] public EventCallback<bool> OnSetDarkMode { get; set; }
@@ -207,6 +253,9 @@
     private static string MaximumCameraButtonOpacityValue => AppConstants.MaximumCameraButtonOpacity.ToString(CultureInfo.InvariantCulture);
     private string CustomCameraButtonOpacityValue => State.CustomCameraButtonOpacity.ToString(CultureInfo.InvariantCulture);
     private string RememberedDeviceText => State.RememberedBluetoothDevice?.Name ?? GermanText.NoRememberedDevice;
+    private string SelectedTestVideoFileText => State.IsTestVideoFileRegistered
+        ? State.SelectedTestVideoFileName
+        : GermanText.NoTestVideoSelected;
     private bool SleepResetIsDisabled => !State.IsConnected || State.IsBluetoothOperationRunning;
     private string CurrentDeviceName => !string.IsNullOrWhiteSpace(State.ConnectedDeviceName)
         ? State.ConnectedDeviceName
@@ -219,6 +268,28 @@
     private async Task ChangeHelpSystemHidden(ChangeEventArgs changeEventArgs) => await OnSetHelpSystemHidden.InvokeAsync(GetBoolean(changeEventArgs));
     private async Task ChangeShouldCloseButtonViewAfterSend(ChangeEventArgs changeEventArgs) => await OnSetShouldCloseButtonViewAfterSend.InvokeAsync(GetBoolean(changeEventArgs));
     private async Task ChangeShouldSkipSleepDisplayAfterClearDisplay(ChangeEventArgs changeEventArgs) => await OnSetShouldSkipSleepDisplayAfterClearDisplay.InvokeAsync(GetBoolean(changeEventArgs));
+
+    private async Task SelectTestVideoFile()
+    {
+        try
+        {
+            var fileName = await VideoCameraService.SelectTestVideoFileAsync(TestVideoFileInputIdentifier);
+            await OnSetTestVideoFileSelection.InvokeAsync(new TestVideoFileSelection(fileName, true));
+        }
+        catch (Exception exception)
+        {
+            await OnSetTestVideoFileSelection.InvokeAsync(new TestVideoFileSelection(
+                State.SelectedTestVideoFileName,
+                State.IsTestVideoFileRegistered,
+                GetSelectionErrorText(exception)));
+        }
+    }
+
+    private async Task RemoveTestVideoFile()
+    {
+        await VideoCameraService.RemoveTestVideoFileAsync(TestVideoFileInputIdentifier);
+        await OnSetTestVideoFileSelection.InvokeAsync(new TestVideoFileSelection("", false));
+    }
 
     private async Task ChangeCameraButtonOpacity(ChangeEventArgs changeEventArgs)
     {
@@ -257,4 +328,7 @@
     }
 
     private static bool GetBoolean(ChangeEventArgs changeEventArgs) => changeEventArgs.Value is bool value && value;
+
+    private static string GetSelectionErrorText(Exception exception) =>
+        string.IsNullOrWhiteSpace(exception.Message) ? GermanText.TestVideoUnsupported : exception.Message;
 }

@@ -30,6 +30,7 @@ public sealed class ApplicationStateStore
         RememberedBluetoothDevice = State.RememberedBluetoothDevice,
         SelectedCameraButtonAppearance = State.SelectedCameraButtonAppearance,
         SelectedCameraViewStyle = State.SelectedCameraViewStyle,
+        SelectedVideoSourceType = State.SelectedVideoSourceType,
         ShouldCloseButtonViewAfterSend = State.ShouldCloseButtonViewAfterSend,
         ShouldSkipSleepDisplayAfterClearDisplay = State.ShouldSkipSleepDisplayAfterClearDisplay
     };
@@ -48,6 +49,7 @@ public sealed class ApplicationStateStore
             RememberedBluetoothDevice = settings.RememberedBluetoothDevice,
             SelectedCameraButtonAppearance = NormalizeCameraButtonAppearance(settings.SelectedCameraButtonAppearance),
             SelectedCameraViewStyle = settings.SelectedCameraViewStyle,
+            SelectedVideoSourceType = NormalizeVideoSourceType(settings.SelectedVideoSourceType),
             ShouldCloseButtonViewAfterSend = settings.ShouldCloseButtonViewAfterSend,
             ShouldSkipSleepDisplayAfterClearDisplay = settings.ShouldSkipSleepDisplayAfterClearDisplay
         });
@@ -123,6 +125,11 @@ public sealed class ApplicationStateStore
         AppConstants.CameraButtonAppearances.Contains(cameraButtonAppearance)
             ? cameraButtonAppearance
             : CameraButtonAppearance.Normal;
+
+    public static VideoSourceType NormalizeVideoSourceType(VideoSourceType videoSourceType) =>
+        AppConstants.VideoSourceTypes.Contains(videoSourceType)
+            ? videoSourceType
+            : VideoSourceType.LiveCamera;
 
     public static string GetDeviceDisplayName(BluetoothDeviceInformation bluetoothDevice)
     {

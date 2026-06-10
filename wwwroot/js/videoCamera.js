@@ -1,5 +1,6 @@
 (() => {
     const streamsByElement = new Map();
+    let testVideoObjectUrl = null;
 
     function getVideoElement(videoElementIdentifier) {
         const videoElement = document.getElementById(videoElementIdentifier);
@@ -9,6 +10,29 @@
         }
 
         return videoElement;
+    }
+
+    function getFileInputElement(fileInputElementIdentifier) {
+        const fileInputElement = document.getElementById(fileInputElementIdentifier);
+
+        if (!fileInputElement) {
+            throw new Error("Dateiauswahl wurde nicht gefunden.");
+        }
+
+        return fileInputElement;
+    }
+
+    function releaseTestVideoObjectUrl() {
+        if (testVideoObjectUrl) {
+            URL.revokeObjectURL(testVideoObjectUrl);
+            testVideoObjectUrl = null;
+        }
+    }
+
+    function isMp4File(file) {
+        const fileName = String(file?.name || "").toLowerCase();
+        const fileType = String(file?.type || "").toLowerCase();
+        return fileType === "video/mp4" || fileName.endsWith(".mp4");
     }
 
     async function applyZoom(videoElement, zoom) {
@@ -53,6 +77,48 @@
 
             streamsByElement.set(videoElementIdentifier, stream);
             videoElement.srcObject = stream;
+            videoElement.removeAttribute("src");
+            videoElement.loop = false;
+            await videoElement.play();
+            await applyZoom(videoElement, zoom);
+        },
+
+        selectTestVideoFile(fileInputElementIdentifier) {
+            const fileInputElement = getFileInputElement(fileInputElementIdentifier);
+            const file = fileInputElement.files?.[0];
+
+            if (!file || !isMp4File(file)) {
+                throw new Error("Bitte eine MP4-Datei auswählen.");
+            }
+
+            releaseTestVideoObjectUrl();
+            testVideoObjectUrl = URL.createObjectURL(file);
+            return file.name;
+        },
+
+        removeTestVideoFile(fileInputElementIdentifier) {
+            releaseTestVideoObjectUrl();
+            const fileInputElement = document.getElementById(fileInputElementIdentifier);
+
+            if (fileInputElement) {
+                fileInputElement.value = "";
+            }
+        },
+
+        async startTestVideo(videoElementIdentifier, zoom) {
+            if (!testVideoObjectUrl) {
+                throw new Error("Bitte wähle in den Einstellungen eine MP4-Datei für diese App-Sitzung aus.");
+            }
+
+            const videoElement = getVideoElement(videoElementIdentifier);
+            await this.stop(videoElementIdentifier);
+
+            videoElement.srcObject = null;
+            videoElement.src = testVideoObjectUrl;
+            videoElement.loop = true;
+            videoElement.muted = true;
+            videoElement.playsInline = true;
+            videoElement.autoplay = true;
             await videoElement.play();
             await applyZoom(videoElement, zoom);
         },
@@ -60,6 +126,17 @@
         async setZoom(videoElementIdentifier, zoom) {
             const videoElement = getVideoElement(videoElementIdentifier);
             await applyZoom(videoElement, zoom);
+        },
+
+        async setPaused(videoElementIdentifier, isPaused) {
+            const videoElement = getVideoElement(videoElementIdentifier);
+
+            if (isPaused) {
+                videoElement.pause();
+                return;
+            }
+
+            await videoElement.play();
         },
 
         async stop(videoElementIdentifier) {
@@ -75,7 +152,11 @@
 
             const videoElement = document.getElementById(videoElementIdentifier);
             if (videoElement) {
+                videoElement.pause();
                 videoElement.srcObject = null;
+                videoElement.removeAttribute("src");
+                videoElement.loop = false;
+                videoElement.load();
             }
         }
     };

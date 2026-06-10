@@ -76,6 +76,18 @@ public static class GermanText
     public const string DisableDeviceConfirmation = "Gerät deaktivieren";
     public const string DeviceDisabledTitle = "Gerät vollständig deaktiviert";
     public const string Understood = "Verstanden";
+    public const string VideoSource = "Videoquelle";
+    public const string LiveCamera = "Livekamera";
+    public const string TestVideo = "Testvideo";
+    public const string SelectTestVideo = "Testvideo auswählen";
+    public const string RemoveTestVideo = "Testvideo entfernen";
+    public const string TestVideoMp4Hint = "Bitte eine MP4-Datei auswählen. Die Datei wird nicht hochgeladen und gilt nur bis zum Neuladen der App.";
+    public const string TestVideoZoomToFillHint = "Das Testvideo wird immer bildfüllend angezeigt. Kleine Auflösungen können unscharf wirken.";
+    public const string SelectedTestVideo = "Ausgewähltes Testvideo";
+    public const string NoTestVideoSelected = "Keine MP4-Datei ausgewählt.";
+    public const string TestVideoMissingTitle = "Testvideo fehlt.";
+    public const string TestVideoMissing = "Bitte wähle in den Einstellungen eine MP4-Datei für diese App-Sitzung aus.";
+    public const string TestVideoUnsupported = "Bitte eine MP4-Datei auswählen.";
     public const string CameraView = "Kameraansicht";
     public const string CameraControls = "Kamera-Bedienung";
     public const string Opacity = "Deckkraft";
@@ -167,4 +179,10 @@ public static class GermanText
             CameraButtonAppearance.Custom => Custom,
             _ => Normal
         };
+
+    public static string GetVideoSourceTypeLabel(VideoSourceType videoSourceType) => videoSourceType switch
+    {
+        VideoSourceType.TestVideo => TestVideo,
+        _ => LiveCamera
+    };
 }
