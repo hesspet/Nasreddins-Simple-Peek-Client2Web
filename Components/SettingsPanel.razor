@@ -68,7 +68,6 @@
                 <button class="button" @onclick="@(() => OnSetCycleListenSeconds.InvokeAsync(5))">+5</button>
             </div>
         </div>
-        <button class="button primary-button" @onclick="OnSendCycleSleepCommand">@GermanText.SendSleepCommand</button>
     </div>
 
     <div class="settings-group">
@@ -111,12 +110,52 @@
             </label>
         }
     </div>
+
+    <div class="settings-group danger-zone">
+        <h3>@GermanText.DangerZone</h3>
+        <p>@GermanText.DisableDeviceQuestion</p>
+        <button class="button danger-button" disabled="@SleepResetIsDisabled" @onclick="OpenSleepResetConfirmation">
+            @GermanText.DisableDevice
+        </button>
+    </div>
+
+    @if (isSleepResetConfirmationOpen)
+    {
+        <div class="confirmation-backdrop">
+            <button class="confirmation-dismiss" type="button" aria-label="@GermanText.Cancel" @onclick="CloseSleepResetConfirmation"></button>
+            <section class="confirmation-dialog" role="dialog" aria-modal="true" aria-labelledby="sleep-reset-confirmation-title">
+                <h3 id="sleep-reset-confirmation-title">@GermanText.DisableDeviceTitle</h3>
+                <p>@GermanText.DisableDeviceQuestion</p>
+                <div class="confirmation-actions">
+                    <button class="button" type="button" @onclick="CloseSleepResetConfirmation">@GermanText.Cancel</button>
+                    <button class="button danger-button" type="button" @onclick="ConfirmSleepReset">@GermanText.DisableDeviceConfirmation</button>
+                </div>
+            </section>
+        </div>
+    }
+
+    @if (isSleepResetCompletionOpen)
+    {
+        <div class="confirmation-backdrop">
+            <section class="confirmation-dialog sleep-reset-completion-dialog" role="dialog" aria-modal="true" aria-labelledby="sleep-reset-completion-title">
+                <h3 id="sleep-reset-completion-title">@GermanText.DeviceDisabledTitle</h3>
+                <p>@SleepResetCompletionMessage</p>
+                <div class="confirmation-actions">
+                    <button class="button primary-button" type="button" @onclick="CloseSleepResetCompletion">@GermanText.Understood</button>
+                </div>
+            </section>
+        </div>
+    }
 </section>
 
 @code {
+    private bool isSleepResetConfirmationOpen;
+    private bool isSleepResetCompletionOpen;
+    private string disabledDeviceName = "";
+
     [Parameter, EditorRequired] public ApplicationState State { get; set; } = new();
     [Parameter] public bool IsHelpVisible { get; set; }
-    [Parameter, EditorRequired] public EventCallback OnSendCycleSleepCommand { get; set; }
+    [Parameter, EditorRequired] public Func<string, Task<bool>> OnSendSleepResetCommand { get; set; } = _ => Task.FromResult(false);
     [Parameter, EditorRequired] public EventCallback<CameraButtonAppearance> OnSetCameraButtonAppearance { get; set; }
     [Parameter, EditorRequired] public EventCallback<double> OnSetCameraButtonOpacity { get; set; }
     [Parameter, EditorRequired] public EventCallback<CameraViewStyle> OnSetCameraViewStyle { get; set; }
@@ -137,6 +176,11 @@
     private static string MaximumCameraButtonOpacityValue => AppConstants.MaximumCameraButtonOpacity.ToString(CultureInfo.InvariantCulture);
     private string CustomCameraButtonOpacityValue => State.CustomCameraButtonOpacity.ToString(CultureInfo.InvariantCulture);
     private string RememberedDeviceText => State.RememberedBluetoothDevice?.Name ?? GermanText.NoRememberedDevice;
+    private bool SleepResetIsDisabled => !State.IsConnected || State.IsBluetoothOperationRunning;
+    private string CurrentDeviceName => !string.IsNullOrWhiteSpace(State.ConnectedDeviceName)
+        ? State.ConnectedDeviceName
+        : State.RememberedBluetoothDevice?.Name ?? "BlePrompter";
+    private string SleepResetCompletionMessage => GermanText.GetDeviceDisabledMessage(disabledDeviceName);
 
     private async Task ChangeDarkMode(ChangeEventArgs changeEventArgs) => await OnSetDarkMode.InvokeAsync(GetBoolean(changeEventArgs));
     private async Task ChangeDisplayInverted(ChangeEventArgs changeEventArgs) => await OnSetDisplayInverted.InvokeAsync(GetBoolean(changeEventArgs));
@@ -151,6 +195,34 @@
         {
             await OnSetCameraButtonOpacity.InvokeAsync(nextValue);
         }
+    }
+
+    private void OpenSleepResetConfirmation()
+    {
+        disabledDeviceName = CurrentDeviceName;
+        isSleepResetConfirmationOpen = true;
+    }
+
+    private void CloseSleepResetConfirmation()
+    {
+        isSleepResetConfirmationOpen = false;
+    }
+
+    private async Task ConfirmSleepReset()
+    {
+        isSleepResetConfirmationOpen = false;
+        disabledDeviceName = CurrentDeviceName;
+        var wasSent = await OnSendSleepResetCommand.Invoke(disabledDeviceName);
+
+        if (wasSent)
+        {
+            isSleepResetCompletionOpen = true;
+        }
+    }
+
+    private void CloseSleepResetCompletion()
+    {
+        isSleepResetCompletionOpen = false;
     }
 
     private static bool GetBoolean(ChangeEventArgs changeEventArgs) => changeEventArgs.Value is bool value && value;

@@ -101,7 +101,7 @@ else
                 <SettingsPanel
                     State="State"
                     IsHelpVisible="IsHelpVisible"
-                    OnSendCycleSleepCommand="CommandService.SendCycleSleepCommandAsync"
+                    OnSendSleepResetCommand="SendSleepResetCommand"
                     OnSetCameraButtonAppearance="SetCameraButtonAppearance"
                     OnSetCameraButtonOpacity="SetCameraButtonOpacity"
                     OnSetCameraViewStyle="SetCameraViewStyle"
@@ -311,6 +311,11 @@ else
     {
         StateStore.ForgetRememberedDevice();
         await SaveSettingsAsync();
+    }
+
+    private async Task<bool> SendSleepResetCommand(string deviceName)
+    {
+        return await CommandService.SendSleepResetCommandAsync();
     }
 
     private async Task SetDarkMode(bool nextValue) =>

@@ -66,6 +66,16 @@ public static class GermanText
     public const string SleepDuration = "Schlafdauer";
     public const string ListenDuration = "Aktivzeit";
     public const string SendSleepCommand = "Gerät schlafen legen";
+    public const string DangerZone = "Gefahrenzone";
+    public const string DisableDevice = "Gerät deaktivieren";
+    public const string DisableDeviceTitle = "Gerät vollständig deaktivieren";
+    public const string DisableDeviceQuestion = "Sende einen Befehl an das aktuell verbundene Gerät zur Aktivierung des Tiefschlaf. Das Gerät" 
+                                              + " wird in Tiefschlaf versetzt und trennt die Verbindung. Danach kann das Gerät nicht mehr durch" 
+                                              + " die Anwendung aktiviert werden. Eine Reaktivierung ist nur durch drücken der RESET Taste oder"
+                                              + " durch die Unterbrechung der Stromversorgung möglich.";
+    public const string DisableDeviceConfirmation = "Gerät deaktivieren";
+    public const string DeviceDisabledTitle = "Gerät vollständig deaktiviert";
+    public const string Understood = "Verstanden";
     public const string CameraView = "Kameraansicht";
     public const string CameraControls = "Kamera-Bedienung";
     public const string Opacity = "Deckkraft";
@@ -101,6 +111,9 @@ public static class GermanText
     public const string ReconnectHint = "Web Bluetooth erlaubt Auto-Reconnect nur für Geräte, die dieser Webseite bereits freigegeben wurden.";
 
     public static string GetMetadataLine(string buildTimestamp) => $"{ApplicationKind} · {Build} {buildTimestamp}";
+
+    public static string GetDeviceDisabledMessage(string deviceName) =>
+        $"Das Gerät {deviceName} ist vollständig deaktiviert und kann ohne Reset des Gerätes nicht mehr verbunden werden.";
 
     public static string GetMenuLabel(MenuItem menuItem) => menuItem switch
     {

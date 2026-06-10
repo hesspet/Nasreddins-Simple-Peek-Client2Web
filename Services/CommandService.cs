@@ -42,6 +42,8 @@ public sealed class CommandService(ApplicationStateStore stateStore, BluetoothPr
         await SendCommandAsync($"SLEEP CYCLE {stateStore.State.CycleSleepSeconds} {stateStore.State.CycleListenSeconds}");
     }
 
+    public async Task<bool> SendSleepResetCommandAsync() => await SendCommandAsync("SLEEP RESET");
+
     public async Task SendCommandAndMaybeCloseOverlayAsync(string command)
     {
         var wasSent = await SendCommandAsync(command);
