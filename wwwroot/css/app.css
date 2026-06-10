@@ -902,17 +902,22 @@ p {
 
 .symbol-input-row {
     gap: 8px;
+    flex-wrap: wrap;
 }
 
 .symbol-input-row input {
     min-height: 44px;
     flex: 1;
-    min-width: 0;
+    min-width: 120px;
     border: 1px solid rgba(255, 255, 255, 0.24);
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.92);
     padding: 10px 12px;
     text-transform: uppercase;
+}
+
+.symbol-input-row .button {
+    flex: 0 0 auto;
 }
 
 .camera-ios .camera-hud {

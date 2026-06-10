@@ -46,8 +46,8 @@
                 <CommandControls
                     ControlsAreDisabled="ControlsAreDisabled"
                     SelectedMode="@(State.FullScreenMode ?? State.SelectedMode)"
-                    SelectedSuitCode="State.SelectedSuitCode"
-                    SymbolText="State.SymbolText"
+                    SelectedSuitCode="@State.SelectedSuitCode"
+                    SymbolText="@State.SymbolText"
                     OnSelectCardSuit="OnSelectCardSuit"
                     OnSendCardRank="OnSendCardRank"
                     OnSendCommand="OnSendCommand"

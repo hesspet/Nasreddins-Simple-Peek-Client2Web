@@ -80,6 +80,17 @@ public sealed class CommandService(ApplicationStateStore stateStore, BluetoothPr
             return;
         }
 
-        await SendCommandAndMaybeCloseOverlayAsync($"SYMBOL {normalizedSymbolText[..Math.Min(2, normalizedSymbolText.Length)]}");
+        var wasSent = await SendCommandAsync($"SYMBOL {normalizedSymbolText[..Math.Min(2, normalizedSymbolText.Length)]}");
+
+        if (!wasSent)
+        {
+            return;
+        }
+
+        stateStore.Update(currentState => currentState with
+        {
+            SymbolText = "",
+            AreFullScreenControlsVisible = currentState.ShouldCloseButtonViewAfterSend ? false : currentState.AreFullScreenControlsVisible
+        });
     }
 }

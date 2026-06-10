@@ -49,6 +49,7 @@ else if (SelectedMode == ModeLabel.Text)
         <div class="symbol-input-row">
             <input maxlength="2" value="@SymbolText" @oninput="ChangeSymbolText" disabled="@ControlsAreDisabled" />
             <button class="button primary-button" disabled="@ControlsAreDisabled" @onclick="OnSendSymbol">@GermanText.Send</button>
+            <button class="button" disabled="@ControlsAreDisabled" @onclick="ClearSymbolText">@GermanText.ClearText</button>
         </div>
     </div>
 }
@@ -95,5 +96,10 @@ else if (SelectedMode == ModeLabel.Wuerfel)
     private async Task ChangeSymbolText(ChangeEventArgs changeEventArgs)
     {
         await OnSetSymbolText.InvokeAsync(Convert.ToString(changeEventArgs.Value) ?? "");
+    }
+
+    private async Task ClearSymbolText()
+    {
+        await OnSetSymbolText.InvokeAsync("");
     }
 }

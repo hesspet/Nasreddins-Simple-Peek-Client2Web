@@ -72,6 +72,7 @@ public static class GermanText
     public const string Zoom = "Zoom";
     public const string Send = "Senden";
     public const string Text = "Text";
+    public const string ClearText = "Text löschen";
     public const string NoLogEntries = "Noch keine Logeinträge.";
     public const string BluetoothUnsupported = "Dieser Browser unterstützt Web Bluetooth nicht. Nutze Android Chrome oder iOS Bluefy.";
     public const string CameraUnsupported = "Dieser Browser stellt keine Kamera-API bereit.";
