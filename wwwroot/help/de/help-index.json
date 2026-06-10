@@ -84,11 +84,39 @@
     "file": "elements/hilfesystem-ausblenden.md"
   },
   {
+    "id": "element-dark-mode",
+    "title": "Dunkelmodus",
+    "scope": "element",
+    "context": "settings",
+    "file": "elements/dunkelmodus.md"
+  },
+  {
+    "id": "element-close-button-view-after-send",
+    "title": "Buttonansicht nach Senden schließen",
+    "scope": "element",
+    "context": "settings",
+    "file": "elements/buttonansicht-nach-senden-schliessen.md"
+  },
+  {
     "id": "element-display-inverted",
     "title": "Display invertieren",
     "scope": "element",
     "context": "settings",
     "file": "elements/display-invertieren.md"
+  },
+  {
+    "id": "element-display-rotated",
+    "title": "Displayanzeige drehen",
+    "scope": "element",
+    "context": "settings",
+    "file": "elements/display-drehen.md"
+  },
+  {
+    "id": "element-skip-sleep-display-after-clear-display",
+    "title": "SLEEP-DISPLAY nach Anzeige löschen unterdrücken",
+    "scope": "element",
+    "context": "settings",
+    "file": "elements/sleep-display-nach-anzeige-loeschen.md"
   },
   {
     "id": "element-cyclic-sleep",
@@ -98,10 +126,45 @@
     "file": "elements/zyklischer-schlaf.md"
   },
   {
+    "id": "element-cycle-sleep-duration",
+    "title": "Schlafdauer",
+    "scope": "element",
+    "context": "settings",
+    "file": "elements/schlafdauer.md"
+  },
+  {
+    "id": "element-cycle-listen-duration",
+    "title": "Aktivzeit",
+    "scope": "element",
+    "context": "settings",
+    "file": "elements/aktivzeit.md"
+  },
+  {
+    "id": "element-camera-view",
+    "title": "Kameraansicht",
+    "scope": "element",
+    "context": "settings",
+    "file": "elements/kameraansicht.md"
+  },
+  {
     "id": "element-camera-controls",
     "title": "Kamera-Bedienung",
     "scope": "element",
     "context": "settings",
     "file": "elements/kamera-bedienung.md"
+  },
+  {
+    "id": "element-camera-button-opacity",
+    "title": "Deckkraft",
+    "scope": "element",
+    "context": "settings",
+    "file": "elements/deckkraft.md"
+  },
+  {
+    "id": "element-sleep-reset",
+    "title": "Gerät deaktivieren",
+    "scope": "element",
+    "context": "settings",
+    "file": "elements/geraet-deaktivieren.md"
   }
 ]

@@ -1,17 +1,25 @@
 <section class="panel settings-panel">
-    <label class="toggle-control">
-        <span>@GermanText.HelpSystemHidden</span>
-        <input type="checkbox" checked="@State.IsHelpSystemHidden" @onchange="ChangeHelpSystemHidden" />
+    <div class="toggle-control">
+        <label class="setting-checkbox-label">
+            <span>@GermanText.HelpSystemHidden</span>
+            <input type="checkbox" checked="@State.IsHelpSystemHidden" @onchange="ChangeHelpSystemHidden" />
+        </label>
         <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.HideHelpSystemHelpIdentifier" Title="@GermanText.HelpSystemHidden" OnOpenHelp="OnOpenHelp" />
-    </label>
-    <label class="toggle-control">
-        <span>@GermanText.DarkMode</span>
-        <input type="checkbox" checked="@State.IsDarkModeEnabled" @onchange="ChangeDarkMode" />
-    </label>
-    <label class="toggle-control">
-        <span>@GermanText.CloseButtonViewAfterSend</span>
-        <input type="checkbox" checked="@State.ShouldCloseButtonViewAfterSend" @onchange="ChangeShouldCloseButtonViewAfterSend" />
-    </label>
+    </div>
+    <div class="toggle-control">
+        <label class="setting-checkbox-label">
+            <span>@GermanText.DarkMode</span>
+            <input type="checkbox" checked="@State.IsDarkModeEnabled" @onchange="ChangeDarkMode" />
+        </label>
+        <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.DarkModeHelpIdentifier" Title="@GermanText.DarkMode" OnOpenHelp="OnOpenHelp" />
+    </div>
+    <div class="toggle-control">
+        <label class="setting-checkbox-label">
+            <span>@GermanText.CloseButtonViewAfterSend</span>
+            <input type="checkbox" checked="@State.ShouldCloseButtonViewAfterSend" @onchange="ChangeShouldCloseButtonViewAfterSend" />
+        </label>
+        <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.CloseButtonViewAfterSendHelpIdentifier" Title="@GermanText.CloseButtonViewAfterSend" OnOpenHelp="OnOpenHelp" />
+    </div>
 
     <div class="settings-group">
         <div class="settings-heading-with-help">
@@ -32,19 +40,27 @@
 
     <div class="settings-group">
         <h3>@GermanText.Display</h3>
-        <label class="toggle-control">
-            <span>@GermanText.DisplayInverted</span>
-            <input type="checkbox" checked="@State.IsDisplayInverted" @onchange="ChangeDisplayInverted" />
+        <div class="toggle-control">
+            <label class="setting-checkbox-label">
+                <span>@GermanText.DisplayInverted</span>
+                <input type="checkbox" checked="@State.IsDisplayInverted" @onchange="ChangeDisplayInverted" />
+            </label>
             <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.DisplayInvertedHelpIdentifier" Title="@GermanText.DisplayInverted" OnOpenHelp="OnOpenHelp" />
-        </label>
-        <label class="toggle-control">
-            <span>@GermanText.DisplayRotated</span>
-            <input type="checkbox" checked="@State.IsDisplayRotated" @onchange="ChangeDisplayRotated" />
-        </label>
-        <label class="toggle-control">
-            <span>@GermanText.SkipSleepDisplayAfterClearDisplay</span>
-            <input type="checkbox" checked="@State.ShouldSkipSleepDisplayAfterClearDisplay" @onchange="ChangeShouldSkipSleepDisplayAfterClearDisplay" />
-        </label>
+        </div>
+        <div class="toggle-control">
+            <label class="setting-checkbox-label">
+                <span>@GermanText.DisplayRotated</span>
+                <input type="checkbox" checked="@State.IsDisplayRotated" @onchange="ChangeDisplayRotated" />
+            </label>
+            <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.DisplayRotatedHelpIdentifier" Title="@GermanText.DisplayRotated" OnOpenHelp="OnOpenHelp" />
+        </div>
+        <div class="toggle-control">
+            <label class="setting-checkbox-label">
+                <span>@GermanText.SkipSleepDisplayAfterClearDisplay</span>
+                <input type="checkbox" checked="@State.ShouldSkipSleepDisplayAfterClearDisplay" @onchange="ChangeShouldSkipSleepDisplayAfterClearDisplay" />
+            </label>
+            <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.SkipSleepDisplayAfterClearDisplayHelpIdentifier" Title="@GermanText.SkipSleepDisplayAfterClearDisplay" OnOpenHelp="OnOpenHelp" />
+        </div>
     </div>
 
     <div class="settings-group">
@@ -59,6 +75,7 @@
                 <strong>@State.CycleSleepSeconds s</strong>
                 <button class="button" @onclick="@(() => OnSetCycleSleepSeconds.InvokeAsync(5))">+5</button>
             </div>
+            <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.CycleSleepDurationHelpIdentifier" Title="@GermanText.SleepDuration" OnOpenHelp="OnOpenHelp" />
         </div>
         <div class="cycle-setting-row">
             <span>@GermanText.ListenDuration</span>
@@ -67,11 +84,15 @@
                 <strong>@State.CycleListenSeconds s</strong>
                 <button class="button" @onclick="@(() => OnSetCycleListenSeconds.InvokeAsync(5))">+5</button>
             </div>
+            <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.CycleListenDurationHelpIdentifier" Title="@GermanText.ListenDuration" OnOpenHelp="OnOpenHelp" />
         </div>
     </div>
 
     <div class="settings-group">
-        <h3>@GermanText.CameraView</h3>
+        <div class="settings-heading-with-help">
+            <h3>@GermanText.CameraView</h3>
+            <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.CameraViewHelpIdentifier" Title="@GermanText.CameraView" OnOpenHelp="OnOpenHelp" />
+        </div>
         <div class="segmented-options">
             @foreach (var cameraViewStyle in Enum.GetValues<CameraViewStyle>())
             {
@@ -99,20 +120,26 @@
         </div>
         @if (State.SelectedCameraButtonAppearance == CameraButtonAppearance.Custom)
         {
-            <label class="range-control">
-                <span>@GermanText.Opacity: @CameraButtonOpacityText</span>
+            <div class="range-control">
+                <div class="range-control-header">
+                    <span>@GermanText.Opacity: @CameraButtonOpacityText</span>
+                    <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.CameraButtonOpacityHelpIdentifier" Title="@GermanText.Opacity" OnOpenHelp="OnOpenHelp" />
+                </div>
                 <input type="range"
                        min="@MinimumCameraButtonOpacityValue"
                        max="@MaximumCameraButtonOpacityValue"
                        step="0.01"
                        value="@CustomCameraButtonOpacityValue"
                        @onchange="ChangeCameraButtonOpacity" />
-            </label>
+            </div>
         }
     </div>
 
     <div class="settings-group danger-zone">
-        <h3>@GermanText.DangerZone</h3>
+        <div class="settings-heading-with-help">
+            <h3>@GermanText.DangerZone</h3>
+            <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.SleepResetHelpIdentifier" Title="@GermanText.DisableDevice" OnOpenHelp="OnOpenHelp" />
+        </div>
         <p>@GermanText.DisableDeviceQuestion</p>
         <button class="button danger-button" disabled="@SleepResetIsDisabled" @onclick="OpenSleepResetConfirmation">
             @GermanText.DisableDevice

@@ -203,7 +203,7 @@ p {
 .settings-panel,
 .settings-group {
     display: grid;
-    gap: 14px;
+    gap: 10px;
 }
 
 .toolbar-action-row {
@@ -307,18 +307,26 @@ p {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 14px;
-    min-height: 44px;
+    gap: 10px;
+    min-height: 36px;
 }
 
 .toggle-control {
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.setting-checkbox-label {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
 }
 
 .toggle-control input {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     accent-color: #0e4f56;
 }
 
@@ -327,9 +335,22 @@ p {
     flex-direction: column;
 }
 
+.range-control-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
 .range-control input {
     width: 100%;
     accent-color: #0e4f56;
+}
+
+.cycle-setting-row {
+    display: grid;
+    grid-template-columns: minmax(90px, 1fr) auto auto;
 }
 
 .stepper-row {
@@ -338,7 +359,7 @@ p {
 
 .settings-group {
     border-top: 1px solid rgba(14, 79, 86, 0.14);
-    padding-top: 14px;
+    padding-top: 10px;
 }
 
 .danger-zone {
@@ -367,7 +388,7 @@ p {
 
 .settings-group h3,
 .device-panel h3 {
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     font-size: 1rem;
 }
 
@@ -394,7 +415,7 @@ p {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
     gap: 8px;
-    margin-top: 14px;
+    margin-top: 8px;
 }
 
 .status-panel {
@@ -1101,13 +1122,11 @@ p {
     }
 
     .status-line,
-    .cycle-setting-row,
-    .toggle-control {
+    .cycle-setting-row {
         grid-template-columns: 1fr;
         align-items: start;
     }
 
-    .toggle-control,
     .cycle-setting-row {
         display: grid;
     }
