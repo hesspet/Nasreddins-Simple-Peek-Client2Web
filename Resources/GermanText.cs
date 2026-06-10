@@ -27,8 +27,8 @@ public static class GermanText
     public const string HelpTextMissing = "Der Hilfetext konnte nicht geladen werden.";
     public const string SelectHelpTopic = "Wähle ein Hilfethema aus der Liste.";
     public const string HelpSystemHidden = "Hilfesystem ausblenden";
-    public const string Connect = "Verbinden";
-    public const string ConnectAgain = "Zuletzt genutztes Gerät verbinden";
+    public const string Connect = "Bluetooth-Gerät auswählen";
+    public const string ConnectAgain = "Letztes Gerät erneut verbinden";
     public const string Disconnect = "Trennen";
     public const string CancelConnection = "Verbindung abbrechen";
     public const string CancelSearch = "Suche abbrechen";
@@ -40,7 +40,15 @@ public static class GermanText
     public const string SearchIsRunning = "Geräteauswahl läuft. BlePrompter bitte eingeschaltet lassen.";
     public const string FilteredScan = "Gefiltert nach BlePrompter und Nordic UART.";
     public const string AllDevicesScan = "Alle sichtbaren BLE-Geräte werden im Browserdialog angeboten.";
-    public const string SleepingDeviceScan = "Lange Suche nach zyklischem Wake-Fenster.";
+    public const string SleepingDeviceScan = "Warte auf das Wake-Fenster des letzten Geräts.";
+    public const string Bluetooth = "Bluetooth";
+    public const string RememberedDevice = "Letztes bekanntes Gerät";
+    public const string NoRememberedDevice = "Kein bekanntes Gerät gespeichert.";
+    public const string ForgetRememberedDevice = "Letztes bekanntes Gerät vergessen";
+    public const string RememberedDeviceForgotten = "Letztes bekanntes Gerät wurde vergessen.";
+    public const string WaitForWakeWindow = "Warte auf Wake-Fenster des letzten Geräts ...";
+    public const string RememberedDeviceReconnectUnsupported = "Dieser Browser kann bekannte Bluetooth-Geräte nicht ohne erneute Auswahl verbinden. Bitte wähle das Bluetooth-Gerät erneut aus.";
+    public const string RememberedDeviceNotAvailable = "Das letzte Gerät ist nicht mehr freigegeben. Bitte wähle das Bluetooth-Gerät erneut aus.";
     public const string CyclicSleep = "Zyklischer Schlaf";
     public const string ConnectedWith = "Verbunden mit";
     public const string LastCommand = "Letzter Befehl";

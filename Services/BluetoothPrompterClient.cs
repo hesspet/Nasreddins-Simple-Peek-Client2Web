@@ -19,6 +19,9 @@ public sealed class BluetoothPrompterClient : IAsyncDisposable
     public async Task<bool> CheckSupportAsync() =>
         await javaScriptRuntime.InvokeAsync<bool>("nasreddinBluetooth.checkSupport");
 
+    public async Task<bool> CheckRememberedDeviceReconnectSupportAsync() =>
+        await javaScriptRuntime.InvokeAsync<bool>("nasreddinBluetooth.canReconnectRememberedDevice");
+
     public async Task<bool> RequestAndConnectAsync(BluetoothScanMode scanMode)
     {
         if (!await CheckSupportAsync())
@@ -99,11 +102,28 @@ public sealed class BluetoothPrompterClient : IAsyncDisposable
             return false;
         }
 
+        if (!await CheckRememberedDeviceReconnectSupportAsync())
+        {
+            stateStore.Update(currentState => currentState with
+            {
+                ConnectionStatus = ConnectionStatus.NotConnected,
+                IsBluetoothOperationRunning = false,
+                SleepingDeviceSearchText = "",
+                LastResponse = GermanText.RememberedDeviceReconnectUnsupported
+            });
+            stateStore.AddLogEntry(GermanText.RememberedDeviceReconnectUnsupported);
+            return false;
+        }
+
         objectReference ??= DotNetObjectReference.Create(this);
+        var reconnectWaitMilliseconds = CalculateReconnectWaitMilliseconds();
         stateStore.Update(currentState => currentState with
         {
-            ConnectionStatus = ConnectionStatus.Connecting,
+            ConnectionStatus = ConnectionStatus.SearchingSleepingDevice,
             IsBluetoothOperationRunning = true,
+            ScanMode = BluetoothScanMode.SleepingDevice,
+            DiscoveredDevices = Array.Empty<BluetoothDeviceInformation>(),
+            SleepingDeviceSearchText = GermanText.WaitForWakeWindow,
             LastResponse = $"{GermanText.ConnectAgain}: {rememberedBluetoothDevice.Name}"
         });
 
@@ -116,7 +136,8 @@ public sealed class BluetoothPrompterClient : IAsyncDisposable
                 rememberedBluetoothDevice.Name,
                 AppConstants.BluetoothPrompterServiceUuid,
                 AppConstants.BluetoothPrompterReceiveCharacteristicUuid,
-                AppConstants.BluetoothPrompterTransmitCharacteristicUuid);
+                AppConstants.BluetoothPrompterTransmitCharacteristicUuid,
+                reconnectWaitMilliseconds);
 
             ApplyConnectedDevice(bluetoothDevice);
             return true;
@@ -128,11 +149,17 @@ public sealed class BluetoothPrompterClient : IAsyncDisposable
             {
                 ConnectionStatus = ConnectionStatus.NotConnected,
                 IsBluetoothOperationRunning = false,
-                LastResponse = message
+                LastResponse = message,
+                SleepingDeviceSearchText = ""
             });
             stateStore.AddLogEntry(message);
             return false;
         }
+    }
+
+    public async Task CancelCurrentOperationAsync()
+    {
+        await javaScriptRuntime.InvokeVoidAsync("nasreddinBluetooth.cancelCurrentOperation");
     }
 
     public async Task DisconnectAsync()
@@ -194,10 +221,20 @@ public sealed class BluetoothPrompterClient : IAsyncDisposable
             IsBluetoothOperationRunning = false,
             IsConnected = true,
             LastResponse = "-",
-            DiscoveredDevices = Array.Empty<BluetoothDeviceInformation>()
+            DiscoveredDevices = Array.Empty<BluetoothDeviceInformation>(),
+            SleepingDeviceSearchText = ""
         });
         stateStore.RememberDevice(bluetoothDevice);
         stateStore.AddLogEntry($"Verbunden mit {bluetoothDevice.Name}.");
+    }
+
+    private int CalculateReconnectWaitMilliseconds()
+    {
+        var waitSeconds = Math.Clamp(
+            stateStore.State.CycleSleepSeconds + stateStore.State.CycleListenSeconds + 10,
+            AppConstants.MinimumReconnectWaitSeconds,
+            AppConstants.MaximumReconnectWaitSeconds);
+        return (int)TimeSpan.FromSeconds(waitSeconds).TotalMilliseconds;
     }
 
     private static string MapBluetoothError(string errorMessage)
@@ -205,6 +242,21 @@ public sealed class BluetoothPrompterClient : IAsyncDisposable
         if (errorMessage.Contains("not supported", StringComparison.OrdinalIgnoreCase))
         {
             return GermanText.BluetoothUnsupported;
+        }
+
+        if (errorMessage.Contains("lookup not found", StringComparison.OrdinalIgnoreCase))
+        {
+            return GermanText.RememberedDeviceReconnectUnsupported;
+        }
+
+        if (errorMessage.Contains("Remembered device", StringComparison.OrdinalIgnoreCase))
+        {
+            return GermanText.RememberedDeviceNotAvailable;
+        }
+
+        if (errorMessage.Contains("canceled", StringComparison.OrdinalIgnoreCase))
+        {
+            return GermanText.CancelConnection;
         }
 
         if (errorMessage.Contains("not found", StringComparison.OrdinalIgnoreCase) ||

@@ -159,6 +159,7 @@ public static class AppConstants
     public const string DisplayInvertedHelpIdentifier = "element-display-inverted";
     public const string CyclicSleepHelpIdentifier = "element-cyclic-sleep";
     public const string CameraControlsHelpIdentifier = "element-camera-controls";
+    public const string ForgetRememberedDeviceHelpIdentifier = "element-forget-remembered-device";
     public const string BluetoothPrompterServiceUuid = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
     public const string BluetoothPrompterReceiveCharacteristicUuid = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
     public const string BluetoothPrompterTransmitCharacteristicUuid = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
@@ -169,6 +170,8 @@ public static class AppConstants
     public const int MaximumCycleSleepSeconds = 60;
     public const int MinimumCycleListenSeconds = 10;
     public const int MaximumCycleListenSeconds = 120;
+    public const int MinimumReconnectWaitSeconds = 30;
+    public const int MaximumReconnectWaitSeconds = 150;
     public const int MaximumLogEntries = 8;
     public const double MaximumCameraZoom = 0.7;
     public const double MinimumCameraButtonOpacity = 0.05;

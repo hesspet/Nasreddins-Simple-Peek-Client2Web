@@ -94,7 +94,6 @@ else
                     OnOpenFullScreenMode="OpenFullScreenMode"
                     OnOpenHelp="OpenHelp"
                     OnReconnect="ReconnectRememberedDevice"
-                    OnSearchSleepingDevice="SearchSleepingDevice"
                     OnSetTestMode="SetTestMode" />
             }
             else if (State.SelectedMenuItem == MenuItem.Einstellungen)
@@ -111,6 +110,7 @@ else
                     OnSetDarkMode="SetDarkMode"
                     OnSetDisplayInverted="SetDisplayInverted"
                     OnSetDisplayRotated="SetDisplayRotated"
+                    OnForgetRememberedDevice="ForgetRememberedDevice"
                     OnSetHelpSystemHidden="SetHelpSystemHidden"
                     OnOpenHelp="OpenHelp"
                     OnSetShouldCloseButtonViewAfterSend="SetShouldCloseButtonViewAfterSend"
@@ -261,36 +261,14 @@ else
         }
     }
 
-    private async Task SearchSleepingDevice()
-    {
-        if (State.IsTestModeEnabled)
-        {
-            const string message = "Testmodus: Suche nach schlafendem Gerät simuliert.";
-            UpdateState(currentState => currentState with
-            {
-                SleepingDeviceSearchText = message,
-                LastResponse = message
-            });
-            StateStore.AddLogEntry(message);
-            return;
-        }
-
-        var wasConnected = await BluetoothPrompterClient.RequestAndConnectAsync(BluetoothScanMode.SleepingDevice);
-
-        if (wasConnected)
-        {
-            await SynchronizeDisplaySettingsAsync();
-            await SaveSettingsAsync();
-        }
-    }
-
     private async Task Disconnect()
     {
         await BluetoothPrompterClient.DisconnectAsync();
     }
 
-    private void CancelBluetoothOperation()
+    private async Task CancelBluetoothOperation()
     {
+        await BluetoothPrompterClient.CancelCurrentOperationAsync();
         UpdateState(currentState => currentState with
         {
             ConnectionStatus = ConnectionStatus.NotConnected,
@@ -327,6 +305,12 @@ else
             LastResponse = GermanText.TestModeDisabled
         });
         StateStore.AddLogEntry(GermanText.TestModeDisabled);
+    }
+
+    private async Task ForgetRememberedDevice()
+    {
+        StateStore.ForgetRememberedDevice();
+        await SaveSettingsAsync();
     }
 
     private async Task SetDarkMode(bool nextValue) =>

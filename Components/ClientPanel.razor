@@ -3,26 +3,20 @@
         @if (!State.IsConnected && !State.IsTestModeEnabled)
         {
             <div class="control-with-help">
-                <button class="button primary-button" disabled="@State.IsBluetoothOperationRunning" @onclick="OnConnect">
-                    @GermanText.Connect
+                <button class="button primary-button" disabled="@State.IsBluetoothOperationRunning" @onclick="PrimaryConnect">
+                    @PrimaryConnectText
                 </button>
-                <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.ConnectHelpIdentifier" Title="@GermanText.Connect" OnOpenHelp="OnOpenHelp" />
+                <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@PrimaryConnectHelpIdentifier" Title="@PrimaryConnectText" OnOpenHelp="OnOpenHelp" />
             </div>
             @if (State.RememberedBluetoothDevice is not null)
             {
                 <div class="control-with-help">
-                    <button class="button" disabled="@State.IsBluetoothOperationRunning" @onclick="OnReconnect">
-                        @GermanText.ConnectAgain
+                    <button class="button" disabled="@State.IsBluetoothOperationRunning" @onclick="OnConnect">
+                        @GermanText.Connect
                     </button>
-                    <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.ReconnectHelpIdentifier" Title="@GermanText.ConnectAgain" OnOpenHelp="OnOpenHelp" />
+                    <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.ConnectHelpIdentifier" Title="@GermanText.Connect" OnOpenHelp="OnOpenHelp" />
                 </div>
             }
-            <div class="control-with-help">
-                <button class="button" disabled="@State.IsBluetoothOperationRunning" @onclick="OnSearchSleepingDevice">
-                    @GermanText.SearchSleepingDevice
-                </button>
-                <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.SearchSleepingDeviceHelpIdentifier" Title="@GermanText.SearchSleepingDevice" OnOpenHelp="OnOpenHelp" />
-            </div>
         }
 
         @if (State.IsBluetoothOperationRunning)
@@ -58,10 +52,10 @@
     @if (State.IsBluetoothOperationRunning || State.DiscoveredDevices.Count > 0)
     {
         <div class="device-panel">
-            <h3>@(State.IsBluetoothOperationRunning ? GermanText.FoundDevices : GermanText.ScanEnded)</h3>
+            <h3>@OperationHeadingText</h3>
             @if (State.DiscoveredDevices.Count == 0)
             {
-                <p>@GermanText.SearchIsRunning</p>
+                <p>@OperationDescriptionText</p>
             }
             else
             {
@@ -120,10 +114,30 @@
     [Parameter, EditorRequired] public EventCallback<ModeLabel> OnOpenFullScreenMode { get; set; }
     [Parameter, EditorRequired] public EventCallback<string> OnOpenHelp { get; set; }
     [Parameter, EditorRequired] public EventCallback OnReconnect { get; set; }
-    [Parameter, EditorRequired] public EventCallback OnSearchSleepingDevice { get; set; }
     [Parameter, EditorRequired] public EventCallback<bool> OnSetTestMode { get; set; }
 
     private bool ControlsAreDisabled => !State.IsConnected && !State.IsTestModeEnabled;
+    private string PrimaryConnectText => State.RememberedBluetoothDevice is null ? GermanText.Connect : GermanText.ConnectAgain;
+    private string OperationHeadingText => State.IsBluetoothOperationRunning
+        ? (State.ScanMode == BluetoothScanMode.SleepingDevice ? GermanText.ConnectAgain : GermanText.FoundDevices)
+        : GermanText.ScanEnded;
+    private string OperationDescriptionText => State.ScanMode == BluetoothScanMode.SleepingDevice
+        ? GermanText.WaitForWakeWindow
+        : GermanText.SearchIsRunning;
+    private string PrimaryConnectHelpIdentifier => State.RememberedBluetoothDevice is null
+        ? AppConstants.ConnectHelpIdentifier
+        : AppConstants.ReconnectHelpIdentifier;
+
+    private async Task PrimaryConnect()
+    {
+        if (State.RememberedBluetoothDevice is null)
+        {
+            await OnConnect.InvokeAsync();
+            return;
+        }
+
+        await OnReconnect.InvokeAsync();
+    }
 
     private async Task ChangeTestMode(ChangeEventArgs changeEventArgs)
     {

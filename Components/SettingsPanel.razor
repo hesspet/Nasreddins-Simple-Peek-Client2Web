@@ -14,6 +14,23 @@
     </label>
 
     <div class="settings-group">
+        <div class="settings-heading-with-help">
+            <h3>@GermanText.Bluetooth</h3>
+            <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.ForgetRememberedDeviceHelpIdentifier" Title="@GermanText.ForgetRememberedDevice" OnOpenHelp="OnOpenHelp" />
+        </div>
+        <div class="status-line">
+            <span>@GermanText.RememberedDevice</span>
+            <strong>@RememberedDeviceText</strong>
+        </div>
+        @if (State.RememberedBluetoothDevice is not null)
+        {
+            <button class="button" disabled="@State.IsBluetoothOperationRunning" @onclick="OnForgetRememberedDevice">
+                @GermanText.ForgetRememberedDevice
+            </button>
+        }
+    </div>
+
+    <div class="settings-group">
         <h3>@GermanText.Display</h3>
         <label class="toggle-control">
             <span>@GermanText.DisplayInverted</span>
@@ -108,6 +125,7 @@
     [Parameter, EditorRequired] public EventCallback<bool> OnSetDarkMode { get; set; }
     [Parameter, EditorRequired] public EventCallback<bool> OnSetDisplayInverted { get; set; }
     [Parameter, EditorRequired] public EventCallback<bool> OnSetDisplayRotated { get; set; }
+    [Parameter, EditorRequired] public EventCallback OnForgetRememberedDevice { get; set; }
     [Parameter, EditorRequired] public EventCallback<bool> OnSetHelpSystemHidden { get; set; }
     [Parameter, EditorRequired] public EventCallback<string> OnOpenHelp { get; set; }
     [Parameter, EditorRequired] public EventCallback<bool> OnSetShouldCloseButtonViewAfterSend { get; set; }
@@ -118,6 +136,7 @@
     private static string MinimumCameraButtonOpacityValue => AppConstants.MinimumCameraButtonOpacity.ToString(CultureInfo.InvariantCulture);
     private static string MaximumCameraButtonOpacityValue => AppConstants.MaximumCameraButtonOpacity.ToString(CultureInfo.InvariantCulture);
     private string CustomCameraButtonOpacityValue => State.CustomCameraButtonOpacity.ToString(CultureInfo.InvariantCulture);
+    private string RememberedDeviceText => State.RememberedBluetoothDevice?.Name ?? GermanText.NoRememberedDevice;
 
     private async Task ChangeDarkMode(ChangeEventArgs changeEventArgs) => await OnSetDarkMode.InvokeAsync(GetBoolean(changeEventArgs));
     private async Task ChangeDisplayInverted(ChangeEventArgs changeEventArgs) => await OnSetDisplayInverted.InvokeAsync(GetBoolean(changeEventArgs));

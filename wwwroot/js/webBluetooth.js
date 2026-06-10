@@ -3,7 +3,8 @@
         device: null,
         receiveCharacteristic: null,
         transmitCharacteristic: null,
-        dotNetReference: null
+        dotNetReference: null,
+        operationAbortController: null
     };
 
     const textEncoder = new TextEncoder();
@@ -78,6 +79,34 @@
         return createDeviceInformation(device);
     }
 
+    function startCancelableOperation() {
+        state.operationAbortController?.abort();
+        state.operationAbortController = new AbortController();
+        return state.operationAbortController;
+    }
+
+    function finishCancelableOperation(operationAbortController) {
+        if (state.operationAbortController === operationAbortController) {
+            state.operationAbortController = null;
+        }
+    }
+
+    function throwIfOperationCanceled(operationAbortController) {
+        if (operationAbortController.signal.aborted) {
+            throw new Error("Bluetooth operation canceled");
+        }
+    }
+
+    function waitForRetry(milliseconds, operationAbortController) {
+        return new Promise((resolve, reject) => {
+            const timeoutIdentifier = window.setTimeout(resolve, milliseconds);
+            operationAbortController.signal.addEventListener("abort", () => {
+                window.clearTimeout(timeoutIdentifier);
+                reject(new Error("Bluetooth operation canceled"));
+            }, { once: true });
+        });
+    }
+
     function handleNotification(event) {
         const responseText = textDecoder.decode(event.target.value.buffer);
         state.dotNetReference?.invokeMethodAsync("HandleBluetoothResponse", responseText);
@@ -94,6 +123,10 @@
             return "bluetooth" in navigator;
         },
 
+        canReconnectRememberedDevice() {
+            return "bluetooth" in navigator && Boolean(navigator.bluetooth.getDevices);
+        },
+
         async requestAndConnect(dotNetReference, scanMode, serviceUuid, receiveCharacteristicUuid, transmitCharacteristicUuid, namePrefix) {
             ensureSupported();
             const requestOptions = buildRequestOptions(scanMode, serviceUuid, namePrefix);
@@ -101,22 +134,61 @@
             return await connectDevice(device, dotNetReference, serviceUuid, receiveCharacteristicUuid, transmitCharacteristicUuid);
         },
 
-        async reconnectRememberedDevice(dotNetReference, rememberedDeviceIdentifier, rememberedDeviceName, serviceUuid, receiveCharacteristicUuid, transmitCharacteristicUuid) {
+        async reconnectRememberedDevice(dotNetReference, rememberedDeviceIdentifier, rememberedDeviceName, serviceUuid, receiveCharacteristicUuid, transmitCharacteristicUuid, timeoutMilliseconds) {
             ensureSupported();
 
             if (!navigator.bluetooth.getDevices) {
                 throw new Error("Remembered device lookup not found");
             }
 
-            const devices = await navigator.bluetooth.getDevices();
-            const device = devices.find(currentDevice =>
-                currentDevice.id === rememberedDeviceIdentifier || currentDevice.name === rememberedDeviceName);
+            const operationAbortController = startCancelableOperation();
 
-            if (!device) {
-                throw new Error("Remembered device not found");
+            try {
+                const devices = await navigator.bluetooth.getDevices();
+                const device = devices.find(currentDevice =>
+                    currentDevice.id === rememberedDeviceIdentifier || currentDevice.name === rememberedDeviceName);
+
+                if (!device) {
+                    throw new Error("Remembered device not found");
+                }
+
+                const reconnectDeadline = Date.now() + Math.max(0, timeoutMilliseconds || 0);
+                let lastConnectError = null;
+
+                while (Date.now() <= reconnectDeadline) {
+                    throwIfOperationCanceled(operationAbortController);
+
+                    try {
+                        const bluetoothDevice = await connectDevice(device, dotNetReference, serviceUuid, receiveCharacteristicUuid, transmitCharacteristicUuid);
+                        if (operationAbortController.signal.aborted) {
+                            if (device.gatt?.connected) {
+                                device.gatt.disconnect();
+                            }
+
+                            throw new Error("Bluetooth operation canceled");
+                        }
+
+                        return bluetoothDevice;
+                    } catch (connectError) {
+                        lastConnectError = connectError;
+
+                        if (device.gatt?.connected) {
+                            device.gatt.disconnect();
+                        }
+
+                        await waitForRetry(2000, operationAbortController);
+                    }
+                }
+
+                throw lastConnectError || new Error("Remembered device not found");
+            } finally {
+                finishCancelableOperation(operationAbortController);
             }
+        },
 
-            return await connectDevice(device, dotNetReference, serviceUuid, receiveCharacteristicUuid, transmitCharacteristicUuid);
+        cancelCurrentOperation() {
+            state.operationAbortController?.abort();
+            state.operationAbortController = null;
         },
 
         async sendCommand(command) {

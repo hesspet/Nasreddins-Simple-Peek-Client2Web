@@ -36,14 +36,14 @@
   },
   {
     "id": "element-connect",
-    "title": "Bluetooth verbinden",
+    "title": "Bluetooth-Gerät auswählen",
     "scope": "element",
     "context": "client",
     "file": "elements/bluetooth-verbinden.md"
   },
   {
     "id": "element-reconnect",
-    "title": "Zuletzt genutztes Gerät",
+    "title": "Letztes Gerät erneut verbinden",
     "scope": "element",
     "context": "client",
     "file": "elements/zuletzt-genutztes-geraet.md"
@@ -54,6 +54,13 @@
     "scope": "element",
     "context": "client",
     "file": "elements/schlafendes-geraet-suchen.md"
+  },
+  {
+    "id": "element-forget-remembered-device",
+    "title": "Letztes bekanntes Gerät vergessen",
+    "scope": "element",
+    "context": "settings",
+    "file": "elements/letztes-bekanntes-geraet-vergessen.md"
   },
   {
     "id": "element-test-mode",

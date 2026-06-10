@@ -81,6 +81,16 @@ public sealed class ApplicationStateStore
         Update(currentState => currentState with { RememberedBluetoothDevice = rememberedDevice });
     }
 
+    public void ForgetRememberedDevice()
+    {
+        Update(currentState => currentState with
+        {
+            RememberedBluetoothDevice = null,
+            LastResponse = GermanText.RememberedDeviceForgotten
+        });
+        AddLogEntry(GermanText.RememberedDeviceForgotten);
+    }
+
     public static string FormatEuropeanDate(DateTimeOffset date) => date.ToString("dd.MM.yyyy", GermanCulture);
 
     public static string FormatEuropeanDateTime(DateTimeOffset date) => date.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss", GermanCulture);
