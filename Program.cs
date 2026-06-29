@@ -15,5 +15,6 @@ builder.Services.AddScoped<CommandService>();
 builder.Services.AddScoped<HelpContentService>();
 builder.Services.AddScoped<VideoCameraService>();
 builder.Services.AddScoped<FullscreenService>();
+builder.Services.AddScoped<BackExitGuardService>();
 
 await builder.Build().RunAsync();

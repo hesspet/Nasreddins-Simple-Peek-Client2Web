@@ -1,6 +1,6 @@
 # Projektübersicht: Nasreddins Simple Peek Client 2 Web
 
-Stand: 10.06.2026
+Stand: 29.06.2026
 
 ## Zweck
 
@@ -26,12 +26,16 @@ Dieses Projekt ist die Blazor-WebAssembly-PWA-Portierung von `C:\dev\Nasreddins-
 - `Services/SettingsStorage.cs`: Persistenz über `localStorage`.
 - `Services/HelpContentService.cs`: Lädt den Hilfeindex und die Markdown-Hilfetexte aus `wwwroot/help/de`.
 - `Services/VideoCameraService.cs`: C#-Fassade für Kamera-, Testvideo- und Zoom-Interop.
+- `Services/BackExitGuardService.cs`: C#-Fassade für den globalen Zurück-/Verlassen-Guard.
 - `Components/*.razor`: UI-Komponenten für Client, Einstellungen, Log, About, Command-Controls, Hilfe und Kamera-Vollbild.
+- `Components/BackExitGuard.razor`: Globaler Dialog beim ersten Browser-/Hardware-Zurückdruck.
 - `Resources/GermanText.cs`: Zentraler deutscher Textkatalog für sichtbare UI-Texte.
 - `Resources/Strings.resx`: Platzhalter-/Basis-Ressourcendatei für spätere echte Ressourcenlokalisierung.
 - `wwwroot/help/de`: Pflegbare Markdown-Hilfetexte und `help-index.json`.
 - `wwwroot/js/webBluetooth.js`: Web-Bluetooth-Interop.
 - `wwwroot/js/videoCamera.js`: Kamera-Interop.
+- `wwwroot/js/backExitGuard.js`: History-API-Guard für Browser-/Hardware-Zurück.
+- `Doku/Backguard.md`: Generische Kurzbeschreibung des Backguard-Verfahrens.
 - `.github/workflows/deploy-github-pages.yml`: GitHub-Pages-Deployment.
 - `wwwroot/.nojekyll`: Stellt sicher, dass GitHub Pages Blazor-Ordner wie `_framework` ausliefert.
 
@@ -72,6 +76,7 @@ Dieses Projekt ist die Blazor-WebAssembly-PWA-Portierung von `C:\dev\Nasreddins-
 - Displayoptionen senden bei aktiver Verbindung `I0/I1` und `U0/U1`.
 - Zyklischer Schlaf sendet `SLEEP CYCLE <Schlafdauer> <Listenzeit>`.
 - Kamera-Vollbildansicht mit Livevideo oder sitzungsweise ausgewähltem MP4-Testvideo, REC-Anzeige, Pause, Zoom und ausblendbaren Overlay-Bedienelementen.
+- Browser-/Hardware-Zurück zeigt zuerst einen globalen Verlassen-Dialog; ein zweiter Zurückdruck verlässt Seite oder PWA.
 - In den Einstellungen kann als Videoquelle `Livekamera` oder `Testvideo` gewählt werden. Testvideos müssen MP4-Dateien sein, werden per Browser-Dateiauswahl nur für die aktuelle App-Sitzung registriert und nicht in das GitHub-Pages-Deployment übernommen.
 - Testvideos werden immer per Zoom-to-Fill bildfüllend angezeigt; kleine Auflösungen werden hochskaliert und können im Testmodus unscharf wirken.
 

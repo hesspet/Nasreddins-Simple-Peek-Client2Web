@@ -72,6 +72,8 @@ public static class GermanText
     public const string HelpTextMissing = "Der Hilfetext konnte nicht geladen werden.";
     public const string HideControls = "Bedienung ausblenden";
     public const string LastCommand = "Letzter Befehl";
+    public const string LeaveProgramQuestion = "Das Programm wird verlassen. Drücke erneut Zurück, um die Seite oder PWA zu verlassen.";
+    public const string LeaveProgramTitle = "Programm verlassen";
     public const string ListenDuration = "Aktivzeit";
     public const string LiveCamera = "Livekamera";
     public const string Log = "Log";
@@ -110,6 +112,7 @@ public static class GermanText
     public const string SleepDuration = "Schlafdauer";
     public const string SleepingDeviceNotFound = "Schlafendes Gerät wurde nicht gefunden.";
     public const string SleepingDeviceScan = "Warte auf das Wake-Fenster des letzten Geräts.";
+    public const string StayInApp = "In App bleiben";
     public const string SymbolMissing = "Symbol fehlt.";
     public const string TestMode = "Testmodus";
     public const string TestModeDisabled = "Testmodus beendet.";

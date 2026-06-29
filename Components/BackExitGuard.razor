@@ -1,0 +1,51 @@
+@implements IAsyncDisposable
+@inject BackExitGuardService BackExitGuardService
+
+@if (isExitDialogOpen)
+{
+    <div class="confirmation-backdrop">
+        <button class="confirmation-dismiss" type="button" aria-label="@GermanText.Cancel" @onclick="CancelExit"></button>
+        <section class="confirmation-dialog" role="dialog" aria-modal="true" aria-labelledby="back-exit-confirmation-title">
+            <h3 id="back-exit-confirmation-title">@GermanText.LeaveProgramTitle</h3>
+            <p>@GermanText.LeaveProgramQuestion</p>
+            <div class="confirmation-actions">
+                <button class="button primary-button" type="button" @onclick="CancelExit">@GermanText.StayInApp</button>
+            </div>
+        </section>
+    </div>
+}
+
+@code {
+    private bool isExitDialogOpen;
+
+    protected override void OnInitialized()
+    {
+        BackExitGuardService.ExitRequested += ShowExitDialog;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await BackExitGuardService.InitializeAsync();
+        }
+    }
+
+    private Task ShowExitDialog() => InvokeAsync(() =>
+    {
+        isExitDialogOpen = true;
+        StateHasChanged();
+    });
+
+    private async Task CancelExit()
+    {
+        isExitDialogOpen = false;
+        await BackExitGuardService.CancelExitAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        BackExitGuardService.ExitRequested -= ShowExitDialog;
+        await BackExitGuardService.DisposeAsync();
+    }
+}

@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+    <Version>1.1.0</Version>
     <BuildTimestampUtc Condition="'$(BuildTimestampUtc)' == ''">$([System.DateTime]::UtcNow.ToString("O"))</BuildTimestampUtc>
   </PropertyGroup>
 
