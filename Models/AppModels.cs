@@ -60,6 +60,12 @@ public enum VideoSourceType
     TestVideo
 }
 
+public enum ClientSubMode
+{
+    Peeker,
+    AudioSpy
+}
+
 public sealed record DirectionCommand(string Label, string Arrow, string Command);
 
 public sealed record SuitOption(string Label, string Mark, string Code, bool IsRed);
@@ -69,6 +75,15 @@ public sealed record RankOption(string Label, string Code);
 public sealed record SymbolCommand(string Label, string Command, string Symbol);
 
 public sealed record TestVideoFileSelection(string FileName, bool IsRegistered, string ErrorText = "");
+
+public sealed record AudioSpyMapping
+{
+    public string Id { get; init; } = Guid.NewGuid().ToString("N");
+    public IReadOnlyList<string> Keywords { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> Commands { get; init; } = Array.Empty<string>();
+}
+
+public sealed record AudioSpyMatch(AudioSpyMapping Mapping, string Keyword);
 
 public sealed record HelpTopic
 {
@@ -111,12 +126,14 @@ public sealed record PersistedApplicationSettings
     public double CustomCameraButtonOpacity { get; init; } = 0.18;
     public int CycleSleepSeconds { get; init; } = AppConstants.DefaultCycleSleepSeconds;
     public int CycleListenSeconds { get; init; } = AppConstants.DefaultCycleListenSeconds;
+    public IReadOnlyList<AudioSpyMapping> AudioSpyMappings { get; init; } = AppConstants.DefaultAudioSpyMappings;
     public RememberedBluetoothDevice? RememberedBluetoothDevice { get; init; }
 }
 
 public sealed record ApplicationState
 {
     public MenuItem SelectedMenuItem { get; init; } = MenuItem.Client;
+    public ClientSubMode SelectedClientSubMode { get; init; } = ClientSubMode.Peeker;
     public bool IsMenuOpen { get; init; }
     public bool IsDarkModeEnabled { get; init; }
     public bool IsHelpSystemHidden { get; init; }
@@ -149,6 +166,7 @@ public sealed record ApplicationState
     public bool IsDisplayRotated { get; init; }
     public int CycleSleepSeconds { get; init; } = AppConstants.DefaultCycleSleepSeconds;
     public int CycleListenSeconds { get; init; } = AppConstants.DefaultCycleListenSeconds;
+    public IReadOnlyList<AudioSpyMapping> AudioSpyMappings { get; init; } = AppConstants.DefaultAudioSpyMappings;
     public string SleepingDeviceSearchText { get; init; } = "";
     public string LastCommand { get; init; } = "-";
     public string LastResponse { get; init; } = "-";
@@ -162,6 +180,7 @@ public static class AppConstants
     public const string HelpOverviewIdentifier = "overview";
     public const string ClientHelpIdentifier = "view-peeker";
     public const string SettingsHelpIdentifier = "view-settings";
+    public const string AudioSpyHelpIdentifier = "view-audio-spy";
     public const string FullScreenHelpIdentifier = "view-fullscreen";
     public const string LogHelpIdentifier = "view-log";
     public const string AboutHelpIdentifier = "view-about";
@@ -185,6 +204,7 @@ public static class AppConstants
     public const string CameraButtonOpacityHelpIdentifier = "element-camera-button-opacity";
     public const string ForgetRememberedDeviceHelpIdentifier = "element-forget-remembered-device";
     public const string SleepResetHelpIdentifier = "element-sleep-reset";
+    public const string AudioSpySetupHelpIdentifier = "element-audio-spy-setup";
     public const string BluetoothPrompterServiceUuid = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
     public const string BluetoothPrompterReceiveCharacteristicUuid = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
     public const string BluetoothPrompterTransmitCharacteristicUuid = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
@@ -198,6 +218,7 @@ public static class AppConstants
     public const int MinimumReconnectWaitSeconds = 30;
     public const int MaximumReconnectWaitSeconds = 150;
     public const int MaximumLogEntries = 8;
+    public const int MaximumAudioSpyMappings = 100;
     public const double MaximumCameraZoom = 0.7;
     public const double MinimumCameraButtonOpacity = 0.05;
     public const double MaximumCameraButtonOpacity = 1;
@@ -230,6 +251,15 @@ public static class AppConstants
     [
         VideoSourceType.LiveCamera,
         VideoSourceType.TestVideo
+    ];
+
+    public static readonly IReadOnlyList<AudioSpyMapping> DefaultAudioSpyMappings =
+    [
+        new()
+        {
+            Keywords = ["auto", "car", "ma*ine", "/aut./"],
+            Commands = ["CL", "EQ"]
+        }
     ];
 
     public static readonly IReadOnlyList<DirectionCommand> DirectionCommands =

@@ -93,21 +93,29 @@ else
                 </div>
             </header>
 
-            <h2 class="screen-heading">@GermanText.GetMenuLabel(State.SelectedMenuItem)</h2>
+            <h2 class="screen-heading">@CurrentViewTitle</h2>
 
             @if (State.SelectedMenuItem == MenuItem.Client)
             {
-                <ClientPanel
-                    State="State"
-                    IsHelpVisible="IsHelpVisible"
-                    OnCancelBluetoothOperation="CancelBluetoothOperation"
-                    OnClearDisplay="CommandService.ClearDisplayAsync"
-                    OnConnect="Connect"
-                    OnDisconnect="Disconnect"
-                    OnOpenFullScreenMode="OpenFullScreenMode"
-                    OnOpenHelp="OpenHelp"
-                    OnReconnect="ReconnectRememberedDevice"
-                    OnSetTestMode="SetTestMode" />
+                @if (State.SelectedClientSubMode == ClientSubMode.AudioSpy)
+                {
+                    <AudioSpyPanel State="State" OnSendCommand="CommandService.SendCommandAsync" OnBack="CloseAudioSpy" />
+                }
+                else
+                {
+                    <ClientPanel
+                        State="State"
+                        IsHelpVisible="IsHelpVisible"
+                        OnCancelBluetoothOperation="CancelBluetoothOperation"
+                        OnClearDisplay="CommandService.ClearDisplayAsync"
+                        OnConnect="Connect"
+                        OnDisconnect="Disconnect"
+                        OnOpenAudioSpy="OpenAudioSpy"
+                        OnOpenFullScreenMode="OpenFullScreenMode"
+                        OnOpenHelp="OpenHelp"
+                        OnReconnect="ReconnectRememberedDevice"
+                        OnSetTestMode="SetTestMode" />
+                }
             }
             else if (State.SelectedMenuItem == MenuItem.Einstellungen)
             {
@@ -128,6 +136,7 @@ else
                     OnForgetRememberedDevice="ForgetRememberedDevice"
                     OnSetHelpSystemHidden="SetHelpSystemHidden"
                     OnOpenHelp="OpenHelp"
+                    OnSetAudioSpyMappings="SetAudioSpyMappings"
                     OnSetShouldCloseButtonViewAfterSend="SetShouldCloseButtonViewAfterSend"
                     OnSetShouldSkipSleepDisplayAfterClearDisplay="SetShouldSkipSleepDisplayAfterClearDisplay" />
             }
@@ -162,12 +171,16 @@ else
     private static string BuildTimestampText { get; } = GetBuildTimestampText();
     private string CurrentViewHelpIdentifier => State.SelectedMenuItem switch
     {
+        MenuItem.Client when State.SelectedClientSubMode == ClientSubMode.AudioSpy => AppConstants.AudioSpyHelpIdentifier,
         MenuItem.Einstellungen => AppConstants.SettingsHelpIdentifier,
         MenuItem.Log => AppConstants.LogHelpIdentifier,
         MenuItem.About => AppConstants.AboutHelpIdentifier,
         _ => AppConstants.ClientHelpIdentifier
     };
-    private string CurrentViewHelpTitle => GermanText.GetMenuLabel(State.SelectedMenuItem);
+    private string CurrentViewTitle => State.SelectedMenuItem == MenuItem.Client && State.SelectedClientSubMode == ClientSubMode.AudioSpy
+        ? GermanText.AudioSpy
+        : GermanText.GetMenuLabel(State.SelectedMenuItem);
+    private string CurrentViewHelpTitle => CurrentViewTitle;
 
     protected override async Task OnInitializedAsync()
     {
@@ -254,6 +267,7 @@ else
         UpdateState(currentState => currentState with
         {
             SelectedMenuItem = menuItem,
+            SelectedClientSubMode = menuItem == MenuItem.Client ? ClientSubMode.Peeker : currentState.SelectedClientSubMode,
             IsMenuOpen = false
         });
     }
@@ -362,6 +376,12 @@ else
     private async Task SetShouldSkipSleepDisplayAfterClearDisplay(bool nextValue) =>
         await UpdateStateAndSaveAsync(currentState => currentState with { ShouldSkipSleepDisplayAfterClearDisplay = nextValue });
 
+    private async Task SetAudioSpyMappings(IReadOnlyList<AudioSpyMapping> mappings) =>
+        await UpdateStateAndSaveAsync(currentState => currentState with
+        {
+            AudioSpyMappings = ApplicationStateStore.NormalizeAudioSpyMappings(mappings)
+        });
+
     private async Task SetCameraViewStyle(CameraViewStyle cameraViewStyle) =>
         await UpdateStateAndSaveAsync(currentState => currentState with { SelectedCameraViewStyle = cameraViewStyle });
 
@@ -455,6 +475,16 @@ else
             IsFakeVideoPaused = false
         });
         StartRecordingTimer();
+    }
+
+    private void OpenAudioSpy()
+    {
+        UpdateState(currentState => currentState with { SelectedClientSubMode = ClientSubMode.AudioSpy });
+    }
+
+    private void CloseAudioSpy()
+    {
+        UpdateState(currentState => currentState with { SelectedClientSubMode = ClientSubMode.Peeker });
     }
 
     private void CloseFullScreenMode()

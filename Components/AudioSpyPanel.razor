@@ -1,0 +1,130 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JavaScriptRuntime
+@inject AudioSpyMatcher AudioSpyMatcher
+
+<section class="panel audio-spy-panel">
+    <div class="audio-spy-header">
+        <button class="button" type="button" @onclick="OnBack">@GermanText.Back</button>
+        <div>
+            <h3>@GermanText.AudioSpy</h3>
+            <p class="muted-text">@GermanText.AudioSpyInputHint</p>
+        </div>
+    </div>
+
+    <textarea id="@TextAreaIdentifier"
+              class="audio-spy-textarea"
+              rows="5"
+              autocomplete="off"
+              autocorrect="on"
+              spellcheck="true"
+              placeholder="@GermanText.AudioSpyPlaceholder"></textarea>
+
+    <button class="button" type="button" @onclick="ClearInput">@GermanText.ResetInput</button>
+
+    <section class="audio-spy-history" aria-label="@GermanText.AudioSpyHistory">
+        <h3>@GermanText.AudioSpyHistory</h3>
+        @if (historyEntries.Count == 0)
+        {
+            <p class="muted-text">@GermanText.AudioSpyNoHistory</p>
+        }
+        else
+        {
+            <div class="audio-spy-history-entry audio-spy-history-heading" aria-hidden="true">
+                <strong>@GermanText.AudioSpyTimestamp</strong>
+                <strong>@GermanText.AudioSpyKeyword</strong>
+                <strong>@GermanText.AudioSpyCommands</strong>
+                <strong>@GermanText.AudioSpyStatus</strong>
+            </div>
+            @foreach (var historyEntry in historyEntries)
+            {
+                <article class="audio-spy-history-entry">
+                    <strong>@historyEntry.Timestamp</strong>
+                    <span>@historyEntry.Keyword</span>
+                    <span>@historyEntry.CommandsText</span>
+                    <span>@historyEntry.Status</span>
+                </article>
+            }
+        }
+    </section>
+</section>
+
+@code {
+    private readonly string TextAreaIdentifier = $"audio-spy-input-{Guid.NewGuid():N}";
+    private readonly SemaphoreSlim sendGate = new(1, 1);
+    private readonly List<AudioSpyHistoryEntry> historyEntries = [];
+    private DotNetObjectReference<AudioSpyPanel>? objectReference;
+
+    [Parameter, EditorRequired] public ApplicationState State { get; set; } = new();
+    [Parameter, EditorRequired] public Func<string, Task<bool>> OnSendCommand { get; set; } = _ => Task.FromResult(false);
+    [Parameter, EditorRequired] public EventCallback OnBack { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        objectReference = DotNetObjectReference.Create(this);
+        await JavaScriptRuntime.InvokeVoidAsync("nasreddinAudioSpy.attach", TextAreaIdentifier, objectReference);
+    }
+
+    [JSInvokable]
+    public async Task HandleCompletedWord(string word)
+    {
+        var match = AudioSpyMatcher.FindFirstMatch(word, State.AudioSpyMappings);
+
+        if (match is null)
+        {
+            return;
+        }
+
+        await sendGate.WaitAsync();
+
+        try
+        {
+            var allSent = true;
+            var isSimulation = State.IsTestModeEnabled;
+
+            foreach (var command in match.Mapping.Commands)
+            {
+                allSent &= await OnSendCommand.Invoke(command);
+            }
+
+            var status = isSimulation
+                ? GermanText.AudioSpySimulationOk
+                : allSent ? GermanText.AudioSpySent : State.LastResponse;
+
+            historyEntries.Insert(0, new AudioSpyHistoryEntry(
+                DateTimeOffset.Now.ToString("HH:mm:ss", CultureInfo.GetCultureInfo("de-DE")),
+                match.Keyword,
+                string.Join(", ", match.Mapping.Commands),
+                status));
+
+            if (historyEntries.Count > AppConstants.MaximumLogEntries)
+            {
+                historyEntries.RemoveAt(historyEntries.Count - 1);
+            }
+
+            await InvokeAsync(StateHasChanged);
+        }
+        finally
+        {
+            sendGate.Release();
+        }
+    }
+
+    private async Task ClearInput()
+    {
+        await JavaScriptRuntime.InvokeVoidAsync("nasreddinAudioSpy.clear", TextAreaIdentifier);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await JavaScriptRuntime.InvokeVoidAsync("nasreddinAudioSpy.detach", TextAreaIdentifier);
+        objectReference?.Dispose();
+        sendGate.Dispose();
+    }
+
+    private sealed record AudioSpyHistoryEntry(string Timestamp, string Keyword, string CommandsText, string Status);
+}

@@ -35,6 +35,13 @@
     "file": "views/vollbild.md"
   },
   {
+    "id": "view-audio-spy",
+    "title": "Audio Spy",
+    "scope": "view",
+    "context": "client",
+    "file": "views/audio-spy.md"
+  },
+  {
     "id": "element-connect",
     "title": "Bluetooth-Gerät auswählen",
     "scope": "element",
@@ -173,5 +180,12 @@
     "scope": "element",
     "context": "settings",
     "file": "elements/geraet-deaktivieren.md"
+  },
+  {
+    "id": "element-audio-spy-setup",
+    "title": "Audio-Spy-Setup",
+    "scope": "element",
+    "context": "settings",
+    "file": "elements/audio-spy-setup.md"
   }
 ]

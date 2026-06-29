@@ -92,6 +92,13 @@
         }
     </div>
 
+    <button class="audio-spy-launch-button" type="button" disabled="@ControlsAreDisabled" @onclick="OnOpenAudioSpy">
+        <span class="audio-spy-phone" aria-hidden="true">
+            <span></span>
+        </span>
+        <strong>@GermanText.AudioSpy</strong>
+    </button>
+
     <div class="status-panel">
         <div class="status-line">
             <span>@GermanText.LastCommand</span>
@@ -128,6 +135,7 @@
     [Parameter, EditorRequired] public EventCallback OnClearDisplay { get; set; }
     [Parameter, EditorRequired] public EventCallback OnConnect { get; set; }
     [Parameter, EditorRequired] public EventCallback OnDisconnect { get; set; }
+    [Parameter, EditorRequired] public EventCallback OnOpenAudioSpy { get; set; }
     [Parameter, EditorRequired] public EventCallback<ModeLabel> OnOpenFullScreenMode { get; set; }
     [Parameter, EditorRequired] public EventCallback<string> OnOpenHelp { get; set; }
     [Parameter, EditorRequired] public EventCallback OnReconnect { get; set; }

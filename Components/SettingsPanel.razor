@@ -1,6 +1,75 @@
 @inject VideoCameraService VideoCameraService
+@inject AudioSpyMatcher AudioSpyMatcher
 
 <section class="panel settings-panel">
+    @if (isAudioSpySetupOpen)
+    {
+        <div class="settings-subview-header">
+            <button class="button" type="button" @onclick="CloseAudioSpySetup">@GermanText.Back</button>
+            <div>
+                <h3>@GermanText.AudioSpySetup</h3>
+                <p class="muted-text">@GermanText.AudioSpyMappingCount: @State.AudioSpyMappings.Count/@AppConstants.MaximumAudioSpyMappings</p>
+            </div>
+            <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.AudioSpySetupHelpIdentifier" Title="@GermanText.AudioSpySetup" OnOpenHelp="OnOpenHelp" />
+        </div>
+
+        <div class="audio-spy-mapping-form">
+            <label>
+                <span>@GermanText.AudioSpyKeywords</span>
+                <input value="@audioSpyKeywordsText"
+                       placeholder="@GermanText.AudioSpyKeywordsPlaceholder"
+                       @oninput="ChangeAudioSpyKeywords" />
+            </label>
+            <label>
+                <span>@GermanText.AudioSpyCommands</span>
+                <input value="@audioSpyCommandsText"
+                       placeholder="@GermanText.AudioSpyCommandsPlaceholder"
+                       @oninput="ChangeAudioSpyCommands" />
+            </label>
+            @if (!string.IsNullOrWhiteSpace(audioSpyValidationText))
+            {
+                <p class="validation-message">@audioSpyValidationText</p>
+            }
+            <div class="toolbar-action-row">
+                <button class="button primary-button" type="button" disabled="@AudioSpySaveIsDisabled" @onclick="SaveAudioSpyMapping">
+                    @(editingAudioSpyMappingId is null ? GermanText.AudioSpyAddMapping : GermanText.AudioSpySaveMapping)
+                </button>
+                @if (editingAudioSpyMappingId is not null)
+                {
+                    <button class="button" type="button" @onclick="ResetAudioSpyForm">@GermanText.Cancel</button>
+                }
+            </div>
+        </div>
+
+        <div class="audio-spy-mapping-list">
+            @if (State.AudioSpyMappings.Count == 0)
+            {
+                <p class="muted-text">@GermanText.AudioSpyNoMappings</p>
+            }
+            else
+            {
+                @foreach (var mapping in State.AudioSpyMappings)
+                {
+                    <article class="audio-spy-mapping-row">
+                        <div>
+                            <strong>@GermanText.AudioSpyKeywords</strong>
+                            <span>@string.Join(", ", mapping.Keywords)</span>
+                        </div>
+                        <div>
+                            <strong>@GermanText.AudioSpyCommands</strong>
+                            <span>@string.Join(", ", mapping.Commands)</span>
+                        </div>
+                        <div class="audio-spy-mapping-actions">
+                            <button class="button" type="button" @onclick="@(() => EditAudioSpyMapping(mapping))">@GermanText.Edit</button>
+                            <button class="button" type="button" @onclick="@(() => DeleteAudioSpyMapping(mapping.Id))">@GermanText.Delete</button>
+                        </div>
+                    </article>
+                }
+            }
+        </div>
+    }
+    else
+    {
     <div class="toggle-control">
         <label class="setting-checkbox-label">
             <span>@GermanText.HelpSystemHidden</span>
@@ -38,6 +107,18 @@
                 @GermanText.ForgetRememberedDevice
             </button>
         }
+    </div>
+
+    <div class="settings-group">
+        <div class="settings-heading-with-help">
+            <h3>@GermanText.AudioSpySetup</h3>
+            <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.AudioSpySetupHelpIdentifier" Title="@GermanText.AudioSpySetup" OnOpenHelp="OnOpenHelp" />
+        </div>
+        <div class="status-line">
+            <span>@GermanText.AudioSpyMappingCount</span>
+            <strong>@State.AudioSpyMappings.Count/@AppConstants.MaximumAudioSpyMappings</strong>
+        </div>
+        <button class="button" type="button" @onclick="OpenAudioSpySetup">@GermanText.AudioSpySetup</button>
     </div>
 
     <div class="settings-group">
@@ -220,13 +301,19 @@
             </section>
         </div>
     }
+    }
 </section>
 
 @code {
     private const string TestVideoFileInputIdentifier = "test-video-file-input";
     private bool isSleepResetConfirmationOpen;
     private bool isSleepResetCompletionOpen;
+    private bool isAudioSpySetupOpen;
     private string disabledDeviceName = "";
+    private string? editingAudioSpyMappingId;
+    private string audioSpyKeywordsText = "";
+    private string audioSpyCommandsText = "";
+    private string audioSpyValidationText = "";
 
     [Parameter, EditorRequired] public ApplicationState State { get; set; } = new();
     [Parameter] public bool IsHelpVisible { get; set; }
@@ -244,6 +331,7 @@
     [Parameter, EditorRequired] public EventCallback OnForgetRememberedDevice { get; set; }
     [Parameter, EditorRequired] public EventCallback<bool> OnSetHelpSystemHidden { get; set; }
     [Parameter, EditorRequired] public EventCallback<string> OnOpenHelp { get; set; }
+    [Parameter, EditorRequired] public EventCallback<IReadOnlyList<AudioSpyMapping>> OnSetAudioSpyMappings { get; set; }
     [Parameter, EditorRequired] public EventCallback<bool> OnSetShouldCloseButtonViewAfterSend { get; set; }
     [Parameter, EditorRequired] public EventCallback<bool> OnSetShouldSkipSleepDisplayAfterClearDisplay { get; set; }
 
@@ -261,6 +349,10 @@
         ? State.ConnectedDeviceName
         : State.RememberedBluetoothDevice?.Name ?? "BlePrompter";
     private string SleepResetCompletionMessage => GermanText.GetDeviceDisabledMessage(disabledDeviceName);
+    private bool AudioSpySaveIsDisabled =>
+        string.IsNullOrWhiteSpace(audioSpyKeywordsText) ||
+        string.IsNullOrWhiteSpace(audioSpyCommandsText) ||
+        (editingAudioSpyMappingId is null && State.AudioSpyMappings.Count >= AppConstants.MaximumAudioSpyMappings);
 
     private async Task ChangeDarkMode(ChangeEventArgs changeEventArgs) => await OnSetDarkMode.InvokeAsync(GetBoolean(changeEventArgs));
     private async Task ChangeDisplayInverted(ChangeEventArgs changeEventArgs) => await OnSetDisplayInverted.InvokeAsync(GetBoolean(changeEventArgs));
@@ -268,6 +360,99 @@
     private async Task ChangeHelpSystemHidden(ChangeEventArgs changeEventArgs) => await OnSetHelpSystemHidden.InvokeAsync(GetBoolean(changeEventArgs));
     private async Task ChangeShouldCloseButtonViewAfterSend(ChangeEventArgs changeEventArgs) => await OnSetShouldCloseButtonViewAfterSend.InvokeAsync(GetBoolean(changeEventArgs));
     private async Task ChangeShouldSkipSleepDisplayAfterClearDisplay(ChangeEventArgs changeEventArgs) => await OnSetShouldSkipSleepDisplayAfterClearDisplay.InvokeAsync(GetBoolean(changeEventArgs));
+
+    private void OpenAudioSpySetup()
+    {
+        isAudioSpySetupOpen = true;
+        ResetAudioSpyForm();
+    }
+
+    private void CloseAudioSpySetup()
+    {
+        isAudioSpySetupOpen = false;
+        ResetAudioSpyForm();
+    }
+
+    private void ChangeAudioSpyKeywords(ChangeEventArgs changeEventArgs)
+    {
+        audioSpyKeywordsText = Convert.ToString(changeEventArgs.Value, CultureInfo.InvariantCulture) ?? "";
+        audioSpyValidationText = "";
+    }
+
+    private void ChangeAudioSpyCommands(ChangeEventArgs changeEventArgs)
+    {
+        audioSpyCommandsText = Convert.ToString(changeEventArgs.Value, CultureInfo.InvariantCulture) ?? "";
+        audioSpyValidationText = "";
+    }
+
+    private async Task SaveAudioSpyMapping()
+    {
+        var keywords = ApplicationStateStore.NormalizeCsvValues([audioSpyKeywordsText]);
+        var commands = ApplicationStateStore.NormalizeCsvValues([audioSpyCommandsText]);
+
+        if (keywords.Count == 0 || commands.Count == 0)
+        {
+            audioSpyValidationText = GermanText.AudioSpyInvalidMapping;
+            return;
+        }
+
+        foreach (var keyword in keywords)
+        {
+            if (!AudioSpyMatcher.TryValidateKeyword(keyword, out audioSpyValidationText))
+            {
+                return;
+            }
+        }
+
+        if (editingAudioSpyMappingId is null && State.AudioSpyMappings.Count >= AppConstants.MaximumAudioSpyMappings)
+        {
+            audioSpyValidationText = GermanText.AudioSpyLimitReached;
+            return;
+        }
+
+        var mapping = ApplicationStateStore.NormalizeAudioSpyMapping(new AudioSpyMapping
+        {
+            Id = editingAudioSpyMappingId ?? Guid.NewGuid().ToString("N"),
+            Keywords = keywords,
+            Commands = commands
+        });
+        var mappings = editingAudioSpyMappingId is null
+            ? State.AudioSpyMappings.Append(mapping)
+            : State.AudioSpyMappings.Select(existingMapping => existingMapping.Id == editingAudioSpyMappingId ? mapping : existingMapping);
+
+        await OnSetAudioSpyMappings.InvokeAsync(ApplicationStateStore.NormalizeAudioSpyMappings(mappings.ToArray()));
+        ResetAudioSpyForm();
+    }
+
+    private void EditAudioSpyMapping(AudioSpyMapping mapping)
+    {
+        editingAudioSpyMappingId = mapping.Id;
+        audioSpyKeywordsText = string.Join(", ", mapping.Keywords);
+        audioSpyCommandsText = string.Join(", ", mapping.Commands);
+        audioSpyValidationText = "";
+    }
+
+    private async Task DeleteAudioSpyMapping(string mappingId)
+    {
+        var mappings = State.AudioSpyMappings
+            .Where(mapping => mapping.Id != mappingId)
+            .ToArray();
+
+        await OnSetAudioSpyMappings.InvokeAsync(ApplicationStateStore.NormalizeAudioSpyMappings(mappings));
+
+        if (editingAudioSpyMappingId == mappingId)
+        {
+            ResetAudioSpyForm();
+        }
+    }
+
+    private void ResetAudioSpyForm()
+    {
+        editingAudioSpyMappingId = null;
+        audioSpyKeywordsText = "";
+        audioSpyCommandsText = "";
+        audioSpyValidationText = "";
+    }
 
     private async Task SelectTestVideoFile()
     {

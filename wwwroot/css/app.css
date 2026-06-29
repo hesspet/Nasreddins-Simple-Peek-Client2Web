@@ -27,7 +27,8 @@ body {
 }
 
 button,
-input {
+input,
+textarea {
     font: inherit;
 }
 
@@ -467,6 +468,169 @@ p {
     grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
     gap: 8px;
     margin-top: 8px;
+}
+
+.audio-spy-launch-button {
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    width: min(420px, 100%);
+    margin: 12px auto 0;
+    min-height: 118px;
+    border: 1px solid rgba(14, 79, 86, 0.22);
+    border-radius: 16px;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(242, 202, 91, 0.24), transparent 52%),
+        #ffffff;
+    color: #183033;
+    padding: 14px;
+    font-weight: 900;
+}
+
+.audio-spy-launch-button:hover:not(:disabled) {
+    border-color: #0e4f56;
+}
+
+.audio-spy-launch-button:disabled {
+    opacity: 0.45;
+}
+
+.audio-spy-phone {
+    position: relative;
+    display: grid;
+    place-items: end center;
+    width: 48px;
+    height: 78px;
+    border: 3px solid currentColor;
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(46, 155, 143, 0.18), rgba(14, 79, 86, 0.05));
+}
+
+.audio-spy-phone::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    width: 18px;
+    height: 3px;
+    border-radius: 999px;
+    background: currentColor;
+}
+
+.audio-spy-phone span {
+    width: 9px;
+    height: 9px;
+    margin-bottom: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.dark-theme .audio-spy-launch-button {
+    border-color: rgba(255, 255, 255, 0.16);
+    background:
+        radial-gradient(circle at 50% 0%, rgba(46, 155, 143, 0.25), transparent 54%),
+        #223032;
+    color: #edf6f2;
+}
+
+.audio-spy-panel,
+.audio-spy-mapping-form,
+.audio-spy-mapping-list,
+.audio-spy-history {
+    display: grid;
+    gap: 12px;
+}
+
+.audio-spy-header,
+.settings-subview-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 10px;
+}
+
+.audio-spy-header h3,
+.settings-subview-header h3,
+.audio-spy-history h3 {
+    margin: 0;
+}
+
+.audio-spy-textarea,
+.audio-spy-mapping-form input {
+    width: 100%;
+    border: 1px solid rgba(14, 79, 86, 0.22);
+    border-radius: 8px;
+    background: #ffffff;
+    color: #183033;
+    padding: 10px 12px;
+}
+
+.audio-spy-textarea {
+    min-height: 7.9rem;
+    line-height: 1.35;
+    resize: none;
+}
+
+.audio-spy-mapping-form label {
+    display: grid;
+    gap: 6px;
+    font-weight: 800;
+}
+
+.audio-spy-mapping-list {
+    max-height: 420px;
+    overflow: auto;
+    padding-right: 4px;
+}
+
+.audio-spy-mapping-row,
+.audio-spy-history-entry {
+    display: grid;
+    gap: 8px;
+    border: 1px solid rgba(14, 79, 86, 0.14);
+    border-radius: 8px;
+    background: #f7faf8;
+    padding: 10px;
+}
+
+.audio-spy-mapping-row > div,
+.audio-spy-history-entry {
+    min-width: 0;
+}
+
+.audio-spy-mapping-row strong,
+.audio-spy-mapping-row span,
+.audio-spy-history-entry span {
+    overflow-wrap: anywhere;
+}
+
+.audio-spy-mapping-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.audio-spy-history-entry {
+    grid-template-columns: 76px minmax(70px, 0.8fr) minmax(90px, 1fr) minmax(90px, 1fr);
+    align-items: start;
+}
+
+.audio-spy-history-heading {
+    background: transparent;
+    box-shadow: none;
+    font-size: 0.9rem;
+}
+
+.dark-theme .audio-spy-textarea,
+.dark-theme .audio-spy-mapping-form input {
+    border-color: rgba(255, 255, 255, 0.16);
+    background: #223032;
+    color: #edf6f2;
+}
+
+.dark-theme .audio-spy-mapping-row,
+.dark-theme .audio-spy-history-entry {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: #1b2728;
 }
 
 .status-panel {
@@ -1208,5 +1372,15 @@ p {
 
     .suit-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .audio-spy-header,
+    .settings-subview-header,
+    .audio-spy-history-entry {
+        grid-template-columns: 1fr;
+    }
+
+    .audio-spy-launch-button {
+        width: 100%;
     }
 }

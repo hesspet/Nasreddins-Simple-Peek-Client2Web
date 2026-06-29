@@ -20,6 +20,7 @@ public sealed class ApplicationStateStore
 
     public PersistedApplicationSettings GetPersistedSettings() => new()
     {
+        AudioSpyMappings = NormalizeAudioSpyMappings(State.AudioSpyMappings),
         CustomCameraButtonOpacity = State.CustomCameraButtonOpacity,
         CycleListenSeconds = State.CycleListenSeconds,
         CycleSleepSeconds = State.CycleSleepSeconds,
@@ -39,6 +40,7 @@ public sealed class ApplicationStateStore
     {
         Update(currentState => currentState with
         {
+            AudioSpyMappings = NormalizeAudioSpyMappings(settings.AudioSpyMappings),
             CustomCameraButtonOpacity = ClampCameraButtonOpacity(settings.CustomCameraButtonOpacity),
             CycleListenSeconds = ClampInteger(settings.CycleListenSeconds, AppConstants.MinimumCycleListenSeconds, AppConstants.MaximumCycleListenSeconds),
             CycleSleepSeconds = ClampInteger(settings.CycleSleepSeconds, AppConstants.MinimumCycleSleepSeconds, AppConstants.MaximumCycleSleepSeconds),
@@ -130,6 +132,28 @@ public sealed class ApplicationStateStore
         AppConstants.VideoSourceTypes.Contains(videoSourceType)
             ? videoSourceType
             : VideoSourceType.LiveCamera;
+
+    public static IReadOnlyList<AudioSpyMapping> NormalizeAudioSpyMappings(IReadOnlyList<AudioSpyMapping>? mappings) =>
+        (mappings ?? AppConstants.DefaultAudioSpyMappings)
+            .Select(NormalizeAudioSpyMapping)
+            .Where(mapping => mapping.Keywords.Count > 0 && mapping.Commands.Count > 0)
+            .Take(AppConstants.MaximumAudioSpyMappings)
+            .ToArray();
+
+    public static AudioSpyMapping NormalizeAudioSpyMapping(AudioSpyMapping mapping) => mapping with
+    {
+        Id = string.IsNullOrWhiteSpace(mapping.Id) ? Guid.NewGuid().ToString("N") : mapping.Id,
+        Keywords = NormalizeCsvValues(mapping.Keywords),
+        Commands = NormalizeCsvValues(mapping.Commands)
+    };
+
+    public static IReadOnlyList<string> NormalizeCsvValues(IEnumerable<string>? values) =>
+        (values ?? Array.Empty<string>())
+            .SelectMany(value => value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+            .Select(value => value.Trim())
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
     public static string GetDeviceDisplayName(BluetoothDeviceInformation bluetoothDevice)
     {

@@ -22,18 +22,20 @@ Dieses Projekt ist die Blazor-WebAssembly-PWA-Portierung von `C:\dev\Nasreddins-
 - `Models/AppModels.cs`: Enums, App-State, persistierte Einstellungen, BLE-Geräteinformationen und Kommandokonstanten.
 - `Services/ApplicationStateStore.cs`: Reaktiver App-Zustand und Hilfsformatierungen.
 - `Services/BluetoothPrompterClient.cs`: C#-Fassade für Web Bluetooth.
-- `Services/CommandService.cs`: Sendelogik für `CL`, `SLEEP DISPLAY`, Karten, Pfeile, Text, ESP, Würfel und Schlafzyklus.
+- `Services/CommandService.cs`: Sendelogik für `CL`, `SLEEP DISPLAY`, Karten, Pfeile, Text, ESP, Würfel, Audio Spy und Schlafzyklus.
+- `Services/AudioSpyMatcher.cs`: Schlüsselwort-Matching für Audio Spy mit Regex-/Wildcard-Unterstützung und Regex-Timeout.
 - `Services/SettingsStorage.cs`: Persistenz über `localStorage`.
 - `Services/HelpContentService.cs`: Lädt den Hilfeindex und die Markdown-Hilfetexte aus `wwwroot/help/de`.
 - `Services/VideoCameraService.cs`: C#-Fassade für Kamera-, Testvideo- und Zoom-Interop.
 - `Services/BackExitGuardService.cs`: C#-Fassade für den globalen Zurück-/Verlassen-Guard.
-- `Components/*.razor`: UI-Komponenten für Client, Einstellungen, Log, About, Command-Controls, Hilfe und Kamera-Vollbild.
+- `Components/*.razor`: UI-Komponenten für Client, Audio Spy, Einstellungen, Log, About, Command-Controls, Hilfe und Kamera-Vollbild.
 - `Components/BackExitGuard.razor`: Globaler Dialog beim ersten Browser-/Hardware-Zurückdruck.
 - `Resources/GermanText.cs`: Zentraler deutscher Textkatalog für sichtbare UI-Texte.
 - `Resources/Strings.resx`: Platzhalter-/Basis-Ressourcendatei für spätere echte Ressourcenlokalisierung.
 - `wwwroot/help/de`: Pflegbare Markdown-Hilfetexte und `help-index.json`.
 - `wwwroot/js/webBluetooth.js`: Web-Bluetooth-Interop.
 - `wwwroot/js/videoCamera.js`: Kamera-Interop.
+- `wwwroot/js/audioSpy.js`: Eingabeüberwachung für Audio Spy ohne State-Binding pro Zeichen.
 - `wwwroot/js/backExitGuard.js`: History-API-Guard für Browser-/Hardware-Zurück.
 - `Doku/Backguard.md`: Generische Kurzbeschreibung des Backguard-Verfahrens.
 - `.github/workflows/deploy-github-pages.yml`: GitHub-Pages-Deployment.
@@ -46,6 +48,7 @@ Dieses Projekt ist die Blazor-WebAssembly-PWA-Portierung von `C:\dev\Nasreddins-
 - Browsernahe APIs:
   - `wwwroot/js/webBluetooth.js` kapselt `navigator.bluetooth`.
   - `wwwroot/js/videoCamera.js` kapselt `navigator.mediaDevices.getUserMedia`, MP4-Testvideo-Dateiauswahl und Video-Zoom.
+  - `wwwroot/js/audioSpy.js` erkennt Wortenden im Textfeld und begrenzt die Eingabe auf fünf Zeilen.
 - Zustand:
   - `ApplicationStateStore` hält den reaktiven App-Zustand.
   - Komponenten rendern nach `StateChanged` neu.
@@ -72,6 +75,8 @@ Dieses Projekt ist die Blazor-WebAssembly-PWA-Portierung von `C:\dev\Nasreddins-
 - Web-Bluetooth-Verbindung per Benutzeraktion.
 - Reconnect für bereits freigegebene Geräte, wenn der Browser `navigator.bluetooth.getDevices` unterstützt.
 - Kommandos für Pfeile, Karten, Text, ESP und Würfel.
+- Audio Spy als Untermodus des Peeker: Spracherkennung über die mobile Tastatur, Mapping-Prüfung nach Wortende, sequenzielles Senden der gemappten Befehle und lokaler Verlauf.
+- Audio-Spy-Mappings werden in den Einstellungen gepflegt, sind auf 100 begrenzt und unterstützen exakte Wörter, Wildcards `*`/`?` sowie Regex im Format `/.../`.
 - `Anzeige löschen` sendet `CL` und optional `SLEEP DISPLAY`.
 - Displayoptionen senden bei aktiver Verbindung `I0/I1` und `U0/U1`.
 - Zyklischer Schlaf sendet `SLEEP CYCLE <Schlafdauer> <Listenzeit>`.
