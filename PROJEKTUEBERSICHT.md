@@ -1,6 +1,6 @@
 # Projektübersicht: Nasreddins Simple Peek Client 2 Web
 
-Stand: 30.06.2026
+Stand: 01.07.2026
 
 ## Zweck
 
@@ -8,7 +8,7 @@ Dieses Projekt ist die Blazor-WebAssembly-PWA-Portierung von `C:\dev\Nasreddins-
 
 ## Aktueller Stand
 
-- Das Zielprojekt wurde als eigenständige Blazor WebAssembly PWA auf .NET 9 erstellt.
+- Das Zielprojekt wurde als eigenständige Blazor WebAssembly PWA auf .NET 10 erstellt.
 - Die React-Native-/Expo-Template-App wurde nicht übernommen; die Web-App ist eine neue C#-basierte Portierung.
 - `dotnet build` wurde erfolgreich ausgeführt.
 - `dotnet publish -c Release` wurde erfolgreich ausgeführt.
@@ -43,7 +43,7 @@ Dieses Projekt ist die Blazor-WebAssembly-PWA-Portierung von `C:\dev\Nasreddins-
 
 ## Architektur
 
-- Framework: Blazor WebAssembly Standalone PWA auf .NET 9.
+- Framework: Blazor WebAssembly Standalone PWA auf .NET 10.
 - Hauptsprache: C#.
 - Browsernahe APIs:
   - `wwwroot/js/webBluetooth.js` kapselt `navigator.bluetooth`.

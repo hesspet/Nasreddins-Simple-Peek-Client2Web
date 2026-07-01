@@ -1,0 +1,78 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "qwen3-coder-30b-a3b-instruct",
+  "provider": {
+    "lmstudion": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "LM Studio (lokal)",
+      "options": {
+        "baseURL": "http://127.0.0.1:1234/v1"
+      },
+      "models": {
+        "qwopus3.5-9b-coder-mtp": {
+          "name": "Qwopus 3.5 9B Coder MTP"
+        },
+        "qwen3.5-9b-deepseek-v4-flash": {
+          "name": "Qwen 3.5 9B DeepSeek V4 Flash"
+        },
+        "qwen3-coder-30b-a3b-instruct": {
+          "name": "Qwen 3 Coder 30B A3B Instruct"
+        },
+        "ornith-1.0_codingagent": {
+          "name": "Ornith 1.0 Coding Agent"
+        },
+        "ornith-1.0-9b": {
+          "name": "Ornith 1.0 9B"
+        },
+        "google/gemma-4-12b-qat": {
+          "name": "Gemma 4 12B QAT"
+        },
+        "gemma-4-12b-it-qat-heretic-ja": {
+          "name": "Gemma 4 12B IT QAT Heretic JA"
+        },
+        "x-supergemma4-26b-fast-v2": {
+          "name": "X-SuperGemma4 26B Fast V2"
+        },
+        "gemma-4-31b-it-uncensored-heretic": {
+          "name": "Gemma 4 31B IT Uncensored Heretic"
+        },
+        "gemma-4-31b-it-mystery-fine-tune-heretic-uncensored-thinking-instruct": {
+          "name": "Gemma 4 31B Mystery FT Heretic"
+        },
+        "gemma-4-26b-a4b-it-ultra-uncensored-heretic": {
+          "name": "Gemma 4 26B A4B IT Ultra Heretic"
+        },
+        "mn-grand-23.5b-gutenberg-uncensored-v2-glm4.7-thinking-neo-imatrix": {
+          "name": "MN Grand 23.5B Gutenberg V2"
+        },
+        "dark-cydonian-wind-i1": {
+          "name": "Dark Cydonian Wind I1"
+        },
+        "g4-meromero-26b-a4b-it-uncensored-heretic-i1": {
+          "name": "G4 Meromero 26B A4B IT Heretic I1"
+        },
+        "thedrummer_cydonia-24b-v4.3": {
+          "name": "The Drummer Cydonia 24B V4.3"
+        },
+        "mn-wordstorm-pt1-rcm-kiss-of-madness-18.5b-instruct": {
+          "name": "MN Wordstorm PT1 18.5B Instruct"
+        },
+        "readyart_forgotten-safeword-24b-3.6": {
+          "name": "ReadyArt Forgotten Safeword 24B 3.6"
+        },
+        "gemma-4-e4b-it-ultra-uncensored-heretic": {
+          "name": "Gemma 4 E4B IT Ultra Uncensored Heretic"
+        },
+        "gemma-4-26b-a4b-it-qat": {
+          "name": "Gemma 4 26B A4B IT QAT"
+        },
+        "text-embedding-nomic-embed-text-v1.5": {
+          "name": "Nomic Embed Text V1.5"
+        }
+      }
+    }
+  },
+  "instructions": [
+    ".opencode/AGENTS.md"
+  ]
+}
