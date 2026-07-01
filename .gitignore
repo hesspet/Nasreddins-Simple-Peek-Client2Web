@@ -9,5 +9,3 @@ dotnet-run.log
 dotnet-run.err.log
 TestResults/
 publish/
-/graphify-out
-/_DoGraphify.cmd
