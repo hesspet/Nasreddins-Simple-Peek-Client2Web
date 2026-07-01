@@ -187,5 +187,12 @@
     "scope": "element",
     "context": "settings",
     "file": "elements/audio-spy-setup.md"
+  },
+  {
+    "id": "element-profile",
+    "title": "Profil",
+    "scope": "element",
+    "context": "settings",
+    "file": "elements/profil.md"
   }
 ]

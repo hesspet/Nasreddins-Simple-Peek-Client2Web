@@ -1,11 +1,15 @@
 @page "/"
 @implements IDisposable
 @using System.Globalization
+@using System.Text.Json
 @inject ApplicationStateStore StateStore
 @inject SettingsStorage SettingsStorage
+@inject IJSRuntime JavaScriptRuntime
+@inject AudioSpyMatcher AudioSpyMatcher
 @inject BluetoothPrompterClient BluetoothPrompterClient
 @inject CommandService CommandService
 @inject FullscreenService FullscreenService
+@inject BackExitGuardService BackExitGuardService
 
 <PageTitle>@GermanText.ApplicationTitle</PageTitle>
 
@@ -103,7 +107,7 @@ else
                 }
                 else
                 {
-                    <ClientPanel
+                    <ClientPanel @ref="clientPanel"
                         State="State"
                         IsHelpVisible="IsHelpVisible"
                         OnCancelBluetoothOperation="CancelBluetoothOperation"
@@ -119,9 +123,13 @@ else
             }
             else if (State.SelectedMenuItem == MenuItem.Einstellungen)
             {
-                <SettingsPanel
+                <SettingsPanel @ref="settingsPanel"
                     State="State"
                     IsHelpVisible="IsHelpVisible"
+                    CurrentProfileName="@CurrentProfileDisplayName"
+                    ProfileErrorText="@profileErrorText"
+                    OnExportProfile="ExportProfile"
+                    OnImportProfileSelected="ImportProfile"
                     OnSendSleepResetCommand="SendSleepResetCommand"
                     OnSetCameraButtonAppearance="SetCameraButtonAppearance"
                     OnSetCameraButtonOpacity="SetCameraButtonOpacity"
@@ -163,11 +171,17 @@ else
     private bool haveSettingsLoaded;
     private bool isHelpSheetOpen;
     private string activeHelpIdentifier = AppConstants.HelpOverviewIdentifier;
+    private string currentProfileName = "";
+    private string profileErrorText = "";
     private Timer? recordingTimer;
+    private ClientPanel? clientPanel;
+    private SettingsPanel? settingsPanel;
+    private IDisposable? backHandlerRegistration;
     private ApplicationState State => StateStore.State;
     private bool IsHelpVisible => !State.IsHelpSystemHidden;
     private string PageClass => State.IsDarkModeEnabled ? "app-root dark-theme" : "app-root";
     private string MetadataLine => GermanText.GetMetadataLine(BuildTimestampText);
+    private string CurrentProfileDisplayName => string.IsNullOrWhiteSpace(currentProfileName) ? GermanText.StandardProfile : currentProfileName;
     private static string BuildTimestampText { get; } = GetBuildTimestampText();
     private string CurrentViewHelpIdentifier => State.SelectedMenuItem switch
     {
@@ -184,8 +198,10 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        backHandlerRegistration = BackExitGuardService.RegisterBackHandler(CanHandleBack, HandleBackAsync);
         StateStore.StateChanged += HandleStateChanged;
         var persistedSettings = await SettingsStorage.LoadSettingsAsync();
+        currentProfileName = await SettingsStorage.LoadCurrentProfileNameAsync();
 
         if (persistedSettings is not null)
         {
@@ -241,7 +257,78 @@ else
 
         if (!wurdeAktiviert)
         {
-            UpdateState(currentState => currentState with { LastResponse = "Vollbildmodus wird von diesem Browser nicht unterstützt." });
+            UpdateState(currentState => currentState with { LastResponse = GermanText.FullscreenUnsupported });
+        }
+    }
+
+    private bool CanHandleBack()
+    {
+        if (isHelpSheetOpen || State.IsMenuOpen)
+        {
+            return true;
+        }
+
+        if (State.FullScreenMode is null)
+        {
+            if (State.SelectedMenuItem == MenuItem.Client && clientPanel?.CanHandleBack == true)
+            {
+                return true;
+            }
+
+            if (State.SelectedMenuItem == MenuItem.Einstellungen && settingsPanel?.CanHandleBack == true)
+            {
+                return true;
+            }
+        }
+
+        return State.FullScreenMode is not null ||
+            (State.SelectedMenuItem == MenuItem.Client && State.SelectedClientSubMode == ClientSubMode.AudioSpy) ||
+            State.SelectedMenuItem is MenuItem.Einstellungen or MenuItem.Log or MenuItem.About;
+    }
+
+    private async Task HandleBackAsync()
+    {
+        if (isHelpSheetOpen)
+        {
+            CloseHelp();
+            StateHasChanged();
+            return;
+        }
+
+        if (State.IsMenuOpen)
+        {
+            CloseMenu();
+            return;
+        }
+
+        if (State.FullScreenMode is null)
+        {
+            if (State.SelectedMenuItem == MenuItem.Client && clientPanel?.CanHandleBack == true && await clientPanel.TryHandleBackAsync())
+            {
+                return;
+            }
+
+            if (State.SelectedMenuItem == MenuItem.Einstellungen && settingsPanel?.CanHandleBack == true && await settingsPanel.TryHandleBackAsync())
+            {
+                return;
+            }
+        }
+
+        if (State.FullScreenMode is not null)
+        {
+            CloseFullScreenMode();
+            return;
+        }
+
+        if (State.SelectedMenuItem == MenuItem.Client && State.SelectedClientSubMode == ClientSubMode.AudioSpy)
+        {
+            CloseAudioSpy();
+            return;
+        }
+
+        if (State.SelectedMenuItem is MenuItem.Einstellungen or MenuItem.Log or MenuItem.About)
+        {
+            ReturnToPeeker();
         }
     }
 
@@ -382,6 +469,205 @@ else
             AudioSpyMappings = ApplicationStateStore.NormalizeAudioSpyMappings(mappings)
         });
 
+    private async Task ExportProfile()
+    {
+        profileErrorText = "";
+        var requestedProfileName = await JavaScriptRuntime.InvokeAsync<string?>("prompt", GermanText.ProfileSavePrompt, CurrentProfileDisplayName);
+
+        if (requestedProfileName is null)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(requestedProfileName))
+        {
+            profileErrorText = GermanText.ProfileNameMissing;
+            return;
+        }
+
+        var profileFileName = SettingsStorage.NormalizeProfileFileName(requestedProfileName);
+        var profileName = SettingsStorage.GetProfileNameFromFileName(profileFileName);
+
+        if (string.IsNullOrWhiteSpace(profileName))
+        {
+            profileErrorText = GermanText.ProfileNameMissing;
+            return;
+        }
+
+        var profileText = SettingsStorage.SerializeProfile(StateStore.GetPersistedSettings());
+        await JavaScriptRuntime.InvokeVoidAsync("nasreddinSettingsProfile.downloadProfileFile", profileFileName, profileText);
+        currentProfileName = profileName;
+        await SettingsStorage.SaveCurrentProfileNameAsync(profileName);
+        UpdateState(currentState => currentState with { LastResponse = GermanText.GetProfileSaved(profileName) });
+    }
+
+    private async Task ImportProfile(InputFileChangeEventArgs inputFileChangeEventArgs)
+    {
+        profileErrorText = "";
+        var profileFile = inputFileChangeEventArgs.File;
+
+        if (!SettingsStorage.IsAllowedProfileFileName(profileFile.Name))
+        {
+            profileErrorText = GermanText.ProfileImportInvalidExtension;
+            return;
+        }
+
+        if (profileFile.Size > AppConstants.MaximumProfileFileBytes)
+        {
+            profileErrorText = GermanText.ProfileImportFileTooLarge;
+            return;
+        }
+
+        var profileName = SettingsStorage.GetProfileNameFromFileName(profileFile.Name);
+
+        if (string.IsNullOrWhiteSpace(profileName))
+        {
+            profileErrorText = GermanText.ProfileNameMissing;
+            return;
+        }
+
+        PersistedApplicationSettings? importedSettings;
+
+        try
+        {
+            await using var profileStream = profileFile.OpenReadStream(AppConstants.MaximumProfileFileBytes);
+            using var profileReader = new StreamReader(profileStream);
+            var profileText = await profileReader.ReadToEndAsync();
+            importedSettings = SettingsStorage.DeserializeProfile(profileText);
+        }
+        catch (JsonException)
+        {
+            profileErrorText = GermanText.ProfileImportInvalidJson;
+            return;
+        }
+        catch
+        {
+            profileErrorText = GermanText.ProfileImportReadFailed;
+            return;
+        }
+
+        if (!TryValidateProfileSettings(importedSettings, out profileErrorText))
+        {
+            return;
+        }
+
+        StateStore.ApplyPersistedSettings(importedSettings!);
+        await SaveSettingsAsync();
+        currentProfileName = profileName;
+        await SettingsStorage.SaveCurrentProfileNameAsync(profileName);
+        UpdateState(currentState => currentState with { LastResponse = GermanText.GetProfileImported(profileName) });
+    }
+
+    private bool TryValidateProfileSettings(PersistedApplicationSettings? settings, out string errorText)
+    {
+        errorText = "";
+
+        if (settings is null)
+        {
+            errorText = GermanText.ProfileImportInvalidJson;
+            return false;
+        }
+
+        if (!Enum.IsDefined(settings.SelectedCameraViewStyle))
+        {
+            errorText = GermanText.GetProfileInvalidValue(nameof(settings.SelectedCameraViewStyle));
+            return false;
+        }
+
+        if (!AppConstants.CameraButtonAppearances.Contains(settings.SelectedCameraButtonAppearance))
+        {
+            errorText = GermanText.GetProfileInvalidValue(nameof(settings.SelectedCameraButtonAppearance));
+            return false;
+        }
+
+        if (!AppConstants.VideoSourceTypes.Contains(settings.SelectedVideoSourceType))
+        {
+            errorText = GermanText.GetProfileInvalidValue(nameof(settings.SelectedVideoSourceType));
+            return false;
+        }
+
+        if (!double.IsFinite(settings.CustomCameraButtonOpacity) ||
+            settings.CustomCameraButtonOpacity < AppConstants.MinimumCameraButtonOpacity ||
+            settings.CustomCameraButtonOpacity > AppConstants.MaximumCameraButtonOpacity)
+        {
+            errorText = GermanText.GetProfileInvalidValue(nameof(settings.CustomCameraButtonOpacity));
+            return false;
+        }
+
+        if (settings.CycleSleepSeconds < AppConstants.MinimumCycleSleepSeconds || settings.CycleSleepSeconds > AppConstants.MaximumCycleSleepSeconds)
+        {
+            errorText = GermanText.GetProfileInvalidValue(nameof(settings.CycleSleepSeconds));
+            return false;
+        }
+
+        if (settings.CycleListenSeconds < AppConstants.MinimumCycleListenSeconds || settings.CycleListenSeconds > AppConstants.MaximumCycleListenSeconds)
+        {
+            errorText = GermanText.GetProfileInvalidValue(nameof(settings.CycleListenSeconds));
+            return false;
+        }
+
+        return TryValidateProfileAudioSpyMappings(settings.AudioSpyMappings, out errorText) &&
+            TryValidateProfileRememberedDevice(settings.RememberedBluetoothDevice, out errorText);
+    }
+
+    private bool TryValidateProfileAudioSpyMappings(IReadOnlyList<AudioSpyMapping>? mappings, out string errorText)
+    {
+        errorText = "";
+
+        if (mappings is null || mappings.Count > AppConstants.MaximumAudioSpyMappings)
+        {
+            errorText = GermanText.GetProfileInvalidValue(nameof(PersistedApplicationSettings.AudioSpyMappings));
+            return false;
+        }
+
+        foreach (var mapping in mappings)
+        {
+            var keywords = ApplicationStateStore.NormalizeCsvValues(mapping.Keywords);
+            var commands = ApplicationStateStore.NormalizeCsvValues(mapping.Commands);
+
+            if (keywords.Count == 0 || commands.Count == 0)
+            {
+                errorText = GermanText.GetProfileInvalidValue(nameof(PersistedApplicationSettings.AudioSpyMappings));
+                return false;
+            }
+
+            foreach (var keyword in keywords)
+            {
+                if (!AudioSpyMatcher.TryValidateKeyword(keyword, out errorText))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private static bool TryValidateProfileRememberedDevice(RememberedBluetoothDevice? rememberedBluetoothDevice, out string errorText)
+    {
+        errorText = "";
+
+        if (rememberedBluetoothDevice is null)
+        {
+            return true;
+        }
+
+        if (string.IsNullOrWhiteSpace(rememberedBluetoothDevice.Id) ||
+            string.IsNullOrWhiteSpace(rememberedBluetoothDevice.Name) ||
+            string.IsNullOrWhiteSpace(rememberedBluetoothDevice.LastConnectedDate) ||
+            !DateTime.TryParseExact(rememberedBluetoothDevice.LastConnectedDate, "dd.MM.yyyy", CultureInfo.GetCultureInfo("de-DE"), DateTimeStyles.None, out _) ||
+            (rememberedBluetoothDevice.SignalStrength is < -127 or > 20) ||
+            !Guid.TryParse(rememberedBluetoothDevice.ServiceUuid, out _) ||
+            !Guid.TryParse(rememberedBluetoothDevice.ReceiveCharacteristicUuid, out _) ||
+            !Guid.TryParse(rememberedBluetoothDevice.TransmitCharacteristicUuid, out _))
+        {
+            errorText = GermanText.GetProfileInvalidValue(nameof(PersistedApplicationSettings.RememberedBluetoothDevice));
+            return false;
+        }
+
+        return true;
+    }
+
     private async Task SetCameraViewStyle(CameraViewStyle cameraViewStyle) =>
         await UpdateStateAndSaveAsync(currentState => currentState with { SelectedCameraViewStyle = cameraViewStyle });
 
@@ -487,11 +773,23 @@ else
         UpdateState(currentState => currentState with { SelectedClientSubMode = ClientSubMode.Peeker });
     }
 
+    private void ReturnToPeeker()
+    {
+        UpdateState(currentState => currentState with
+        {
+            SelectedMenuItem = MenuItem.Client,
+            SelectedClientSubMode = ClientSubMode.Peeker,
+            IsMenuOpen = false
+        });
+    }
+
     private void CloseFullScreenMode()
     {
         StopRecordingTimer();
         UpdateState(currentState => currentState with
         {
+            SelectedMenuItem = MenuItem.Client,
+            SelectedClientSubMode = ClientSubMode.Peeker,
             FullScreenMode = null,
             AreFullScreenControlsVisible = false,
             RecordingStartedAt = null,
@@ -547,6 +845,7 @@ else
     public void Dispose()
     {
         StopRecordingTimer();
+        backHandlerRegistration?.Dispose();
         StateStore.StateChanged -= HandleStateChanged;
     }
 }

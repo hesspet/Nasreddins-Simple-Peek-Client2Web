@@ -58,6 +58,16 @@ window.nasreddinBackExitGuard = (() => {
         isExitWarningOpen = false;
     }
 
+    function confirmExit() {
+        if (!isActive) {
+            window.history.back();
+            return;
+        }
+
+        deactivate(false);
+        window.history.go(-2);
+    }
+
     function dispose() {
         deactivate(true);
     }
@@ -65,6 +75,7 @@ window.nasreddinBackExitGuard = (() => {
     return {
         initialize,
         cancelExit,
+        confirmExit,
         dispose
     };
 })();

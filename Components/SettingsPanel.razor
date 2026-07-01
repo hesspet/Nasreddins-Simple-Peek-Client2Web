@@ -70,6 +70,29 @@
     }
     else
     {
+    <div class="settings-group profile-settings">
+        <div class="settings-heading-with-help">
+            <h3>@GermanText.Profile</h3>
+            <HelpButton IsVisible="IsHelpVisible" HelpIdentifier="@AppConstants.ProfileHelpIdentifier" Title="@GermanText.Profile" OnOpenHelp="OnOpenHelp" />
+        </div>
+        <div class="status-line">
+            <span>@GermanText.ProfileCurrent</span>
+            <strong>@CurrentProfileName</strong>
+        </div>
+        <div class="toolbar-action-row">
+            <button class="button primary-button" type="button" @onclick="OnExportProfile">@GermanText.ProfileExport</button>
+            <label class="button file-picker-button" for="@ProfileFileInputIdentifier">@GermanText.ProfileImport</label>
+            <InputFile id="@ProfileFileInputIdentifier"
+                       class="visually-hidden-file-input"
+                       accept=".peekclient.json"
+                       OnChange="OnImportProfileSelected" />
+        </div>
+        @if (!string.IsNullOrWhiteSpace(ProfileErrorText))
+        {
+            <p class="validation-message">@ProfileErrorText</p>
+        }
+    </div>
+
     <div class="toggle-control">
         <label class="setting-checkbox-label">
             <span>@GermanText.HelpSystemHidden</span>
@@ -305,6 +328,7 @@
 </section>
 
 @code {
+    private const string ProfileFileInputIdentifier = "settings-profile-file-input";
     private const string TestVideoFileInputIdentifier = "test-video-file-input";
     private bool isSleepResetConfirmationOpen;
     private bool isSleepResetCompletionOpen;
@@ -317,6 +341,10 @@
 
     [Parameter, EditorRequired] public ApplicationState State { get; set; } = new();
     [Parameter] public bool IsHelpVisible { get; set; }
+    [Parameter, EditorRequired] public string CurrentProfileName { get; set; } = GermanText.StandardProfile;
+    [Parameter] public string ProfileErrorText { get; set; } = "";
+    [Parameter, EditorRequired] public EventCallback OnExportProfile { get; set; }
+    [Parameter, EditorRequired] public EventCallback<InputFileChangeEventArgs> OnImportProfileSelected { get; set; }
     [Parameter, EditorRequired] public Func<string, Task<bool>> OnSendSleepResetCommand { get; set; } = _ => Task.FromResult(false);
     [Parameter, EditorRequired] public EventCallback<CameraButtonAppearance> OnSetCameraButtonAppearance { get; set; }
     [Parameter, EditorRequired] public EventCallback<double> OnSetCameraButtonOpacity { get; set; }
@@ -353,6 +381,33 @@
         string.IsNullOrWhiteSpace(audioSpyKeywordsText) ||
         string.IsNullOrWhiteSpace(audioSpyCommandsText) ||
         (editingAudioSpyMappingId is null && State.AudioSpyMappings.Count >= AppConstants.MaximumAudioSpyMappings);
+    public bool CanHandleBack => isSleepResetConfirmationOpen || isSleepResetCompletionOpen || isAudioSpySetupOpen;
+
+    public Task<bool> TryHandleBackAsync()
+    {
+        if (isSleepResetCompletionOpen)
+        {
+            CloseSleepResetCompletion();
+            StateHasChanged();
+            return Task.FromResult(true);
+        }
+
+        if (isSleepResetConfirmationOpen)
+        {
+            CloseSleepResetConfirmation();
+            StateHasChanged();
+            return Task.FromResult(true);
+        }
+
+        if (isAudioSpySetupOpen)
+        {
+            CloseAudioSpySetup();
+            StateHasChanged();
+            return Task.FromResult(true);
+        }
+
+        return Task.FromResult(false);
+    }
 
     private async Task ChangeDarkMode(ChangeEventArgs changeEventArgs) => await OnSetDarkMode.InvokeAsync(GetBoolean(changeEventArgs));
     private async Task ChangeDisplayInverted(ChangeEventArgs changeEventArgs) => await OnSetDisplayInverted.InvokeAsync(GetBoolean(changeEventArgs));

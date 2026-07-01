@@ -9,7 +9,12 @@
             <h3 id="back-exit-confirmation-title">@GermanText.LeaveProgramTitle</h3>
             <p>@GermanText.LeaveProgramQuestion</p>
             <div class="confirmation-actions">
-                <button class="button primary-button" type="button" @onclick="CancelExit">@GermanText.StayInApp</button>
+                @if (BackExitGuardService.CanGoBack)
+                {
+                    <button class="button primary-button" type="button" @onclick="GoBack">@GermanText.Back</button>
+                }
+                <button class="button" type="button" @onclick="CancelExit">@GermanText.Cancel</button>
+                <button class="button danger-button" type="button" @onclick="ConfirmExit">@GermanText.LeaveApp</button>
             </div>
         </section>
     </div>
@@ -41,6 +46,24 @@
     {
         isExitDialogOpen = false;
         await BackExitGuardService.CancelExitAsync();
+    }
+
+    private async Task GoBack()
+    {
+        if (!BackExitGuardService.CanGoBack)
+        {
+            return;
+        }
+
+        isExitDialogOpen = false;
+        await BackExitGuardService.CancelExitAsync();
+        await BackExitGuardService.HandleBackAsync();
+    }
+
+    private async Task ConfirmExit()
+    {
+        isExitDialogOpen = false;
+        await BackExitGuardService.ConfirmExitAsync();
     }
 
     public async ValueTask DisposeAsync()

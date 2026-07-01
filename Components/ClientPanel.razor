@@ -152,6 +152,19 @@
     private string PrimaryConnectHelpIdentifier => State.RememberedBluetoothDevice is null
         ? AppConstants.ConnectHelpIdentifier
         : AppConstants.ReconnectHelpIdentifier;
+    public bool CanHandleBack => isDisconnectConfirmationOpen;
+
+    public Task<bool> TryHandleBackAsync()
+    {
+        if (!CanHandleBack)
+        {
+            return Task.FromResult(false);
+        }
+
+        CloseDisconnectConfirmation();
+        StateHasChanged();
+        return Task.FromResult(true);
+    }
 
     private async Task PrimaryConnect()
     {

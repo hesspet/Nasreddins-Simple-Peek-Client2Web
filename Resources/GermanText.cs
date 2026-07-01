@@ -93,13 +93,15 @@ public static class GermanText
     public const string FoundDevices = "Gefundene Geräte";
     public const string Fullscreen = "Vollbild";
     public const string FullscreenTitle = "Vollbildmodus aktivieren";
+    public const string FullscreenUnsupported = "Vollbildmodus wird von diesem Browser nicht unterstützt.";
     public const string Help = "Hilfe";
     public const string HelpOverview = "Hilfeübersicht";
     public const string HelpSystemHidden = "Hilfesystem ausblenden";
     public const string HelpTextMissing = "Der Hilfetext konnte nicht geladen werden.";
     public const string HideControls = "Bedienung ausblenden";
     public const string LastCommand = "Letzter Befehl";
-    public const string LeaveProgramQuestion = "Das Programm wird verlassen. Drücke erneut Zurück, um die Seite oder PWA zu verlassen.";
+    public const string LeaveApp = "App verlassen";
+    public const string LeaveProgramQuestion = "Wähle Zurück für die aktuelle Ansicht, Abbrechen zum Bleiben oder App verlassen zum Beenden.";
     public const string LeaveProgramTitle = "Programm verlassen";
     public const string ListenDuration = "Aktivzeit";
     public const string LiveCamera = "Livekamera";
@@ -117,6 +119,16 @@ public static class GermanText
     public const string OpenMenu = "Menü öffnen";
     public const string Pause = "PAUSE";
     public const string PauseVideo = "Video pausieren";
+    public const string Profile = "Profil";
+    public const string ProfileCurrent = "Aktuelles Profil";
+    public const string ProfileExport = "Profil speichern";
+    public const string ProfileImport = "Profil laden";
+    public const string ProfileImportFileTooLarge = "Die Profil-Datei ist zu groß.";
+    public const string ProfileImportInvalidExtension = "Bitte wähle eine Profil-Datei mit der Endung .peekclient.json aus.";
+    public const string ProfileImportInvalidJson = "Das Profil ist kein gültiges Einstellungsprofil.";
+    public const string ProfileImportReadFailed = "Das Profil konnte nicht gelesen werden.";
+    public const string ProfileNameMissing = "Bitte gib einen Profilnamen ein.";
+    public const string ProfileSavePrompt = "Profilnamen eingeben";
     public const string ReconnectHint = "Web Bluetooth erlaubt Auto-Reconnect nur für Geräte, die dieser Webseite bereits freigegeben wurden.";
     public const string Reload = "Neu laden";
     public const string RememberedDevice = "Letztes bekanntes Gerät";
@@ -142,6 +154,7 @@ public static class GermanText
     public const string SleepingDeviceNotFound = "Schlafendes Gerät wurde nicht gefunden.";
     public const string SleepingDeviceScan = "Warte auf das Wake-Fenster des letzten Geräts.";
     public const string StayInApp = "In App bleiben";
+    public const string StandardProfile = "Standard";
     public const string SymbolMissing = "Symbol fehlt.";
     public const string TestMode = "Testmodus";
     public const string TestModeDisabled = "Testmodus beendet.";
@@ -205,6 +218,12 @@ public static class GermanText
     };
 
     public static string GetMetadataLine(string buildTimestamp) => $"{ApplicationKind} · {Build} {buildTimestamp}";
+
+    public static string GetProfileImported(string profileName) => $"Profil \"{profileName}\" wurde geladen.";
+
+    public static string GetProfileInvalidValue(string settingName) => $"Das Profil enthält einen ungültigen Wert für \"{settingName}\".";
+
+    public static string GetProfileSaved(string profileName) => $"Profil \"{profileName}\" wurde gespeichert.";
 
     public static string GetModeLabel(ModeLabel modeLabel) => modeLabel switch
     {
